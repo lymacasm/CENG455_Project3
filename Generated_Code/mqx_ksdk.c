@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-02-06, 17:17, # CodeGen: 1
+**     Date/Time   : 2018-02-06, 17:38, # CodeGen: 2
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -58,7 +58,7 @@
 #include "rtos_main_task.h"
 #include "os_tasks.h"
 #include "MainTask.h"
-#include "serialTask.h"
+#include "handlerTask.h"
 extern void * kernel_data_prv;
 #if MQXCFG_PREALLOCATED_SYSTEM_STACKS
 extern uint8_t mqx_interrupt_stack[];
@@ -82,13 +82,13 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)
   },       
-  /* Task: serialTask */
+  /* Task: handlerTask */
   {
-    /* Task number                    */  SERIALTASK_TASK,
-    /* Entry point                    */  (TASK_FPTR)serial_task,
-    /* Stack size                     */  SERIALTASK_TASK_STACK_SIZE,
-    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(SERIALTASK_TASK_PRIORITY)),
-    /* Task name                      */  SERIALTASK_TASK_NAME,
+    /* Task number                    */  HANDLERTASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)handler_task,
+    /* Stack size                     */  HANDLERTASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(HANDLERTASK_TASK_PRIORITY)),
+    /* Task name                      */  HANDLERTASK_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)

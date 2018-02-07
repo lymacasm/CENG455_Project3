@@ -2404,7 +2404,7 @@
         <Line>myUART_RxCallback</Line>
       </GenMethodsInEvents>
       <GenMethodsInos_tasks lines_count="1">
-        <Line>serial_task</Line>
+        <Line>handler_task</Line>
       </GenMethodsInos_tasks>
       <GenMethodsInrtos_main_task lines_count="1">
         <Line>main_task</Line>
@@ -2415,6 +2415,7 @@
         <Line>Events</Line>
         <Line>fsl_hwtimer1</Line>
         <Line>fsl_mpu1</Line>
+        <Line>handlerTask</Line>
         <Line>MainTask</Line>
         <Line>mqx_ksdk</Line>
         <Line>myUART</Line>
@@ -2422,7 +2423,6 @@
         <Line>osa1</Line>
         <Line>pin_init</Line>
         <Line>rtos_main_task</Line>
-        <Line>serialTask</Line>
         <Line>uart1</Line>
       </GenAllModules>
       <GenExternModules lines_count="0" />
@@ -2435,13 +2435,13 @@
         <Line>fsl_mpu1</Line>
         <Line>fsl_hwtimer1</Line>
         <Line>MainTask</Line>
-        <Line>serialTask</Line>
+        <Line>handlerTask</Line>
         <Line>myUART</Line>
       </GenBeanModules>
     </GenFiles>
     <SignalListFile />
     <DestinationCompiler>GNUC</DestinationCompiler>
-    <ProjectModificationStamp>3</ProjectModificationStamp>
+    <ProjectModificationStamp>4</ProjectModificationStamp>
   </Options>
   <CpuID_1>
     <Generated>true</Generated>
@@ -2450,7 +2450,7 @@
     <GenDriverVersion>01.00</GenDriverVersion>
     <GenEventModule>Events</GenEventModule>
     <HeaderAge>1279691304</HeaderAge>
-    <CodeAge>1279691304</CodeAge>
+    <CodeAge>1279691980</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>2</GenNumMethods>
     <SystemInit>true</SystemInit>
@@ -3410,8 +3410,8 @@
       <GenComponentVersion>1.2.0</GenComponentVersion>
       <GenDriverVersion>01.00</GenDriverVersion>
       <GenEventModule />
-      <HeaderAge>1279691304</HeaderAge>
-      <CodeAge>1279691304</CodeAge>
+      <HeaderAge>1279691980</HeaderAge>
+      <CodeAge>1279691980</CodeAge>
       <AsemblAge>-1</AsemblAge>
       <GenNumMethods>287</GenNumMethods>
       <_int_default_isr>true</_int_default_isr>
@@ -4217,12 +4217,12 @@
   </ComponentID_12>
   <ComponentID_25>
     <Generated>true</Generated>
-    <GenCompName>serialTask</GenCompName>
+    <GenCompName>handlerTask</GenCompName>
     <GenComponentVersion>1.3.0</GenComponentVersion>
     <GenDriverVersion>01.00</GenDriverVersion>
     <GenEventModule>os_tasks</GenEventModule>
-    <HeaderAge>1279691304</HeaderAge>
-    <CodeAge>1279691304</CodeAge>
+    <HeaderAge>1279691980</HeaderAge>
+    <CodeAge>1279691980</CodeAge>
     <AsemblAge>-1</AsemblAge>
     <GenNumMethods>3</GenNumMethods>
     <Init>true</Init>
@@ -4230,7 +4230,7 @@
     <Deinit>false</Deinit>
     <GenNumEvents>1</GenNumEvents>
     <TaskCode_Selected>3</TaskCode_Selected>
-    <TaskCode_Name>serial_task</TaskCode_Name>
+    <TaskCode_Name>handler_task</TaskCode_Name>
     <TaskCode_Priority>interrupts disabled</TaskCode_Priority>
     <GenSmartUserChangesDetected_Header>false</GenSmartUserChangesDetected_Header>
     <GenSmartUserChangesDetected_Code>false</GenSmartUserChangesDetected_Code>

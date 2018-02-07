@@ -11,7 +11,7 @@
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         serial_task - void serial_task(os_task_param_t task_init_data);
+**         handler_task - void handler_task(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
@@ -39,25 +39,68 @@
 #include "fsl_mpu1.h"
 #include "fsl_hwtimer1.h"
 #include "MainTask.h"
-#include "serialTask.h"
+#include "handlerTask.h"
 #include "myUART.h"
+
+#include <mqx.h>
+#include <message.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+#define DATA_SIZE	  8
+
+/* Queue IDs */
+#define RX_QUEUE      8
+
+typedef enum request_cmd
+{
+	READ_PRIV = 0,
+	READ_PRIV_ACK,
+	WRITE_PRIV,
+	WRITE_PRIV_ACK,
+	CLOSE,
+	CLOSE_ACK,
+	READ,
+	READ_ACK,
+	WRITE,
+	WRITE_ACK
+} _request_cmd;
+
+typedef enum status
+{
+	FAILURE = 0,
+	SUCCESS
+} _status;
+
+typedef struct rx_message
+{
+	MESSAGE_HEADER_STRUCT   HEADER;
+	char					DATA;
+	uint8_t					RESERVED[3];
+} RX_MESSAGE, * RX_MESSAGE_PTR;
+
+typedef struct user_message
+{
+	MESSAGE_HEADER_STRUCT   HEADER;
+	_request_cmd			CMD_ID;
+	_status					STATUS;
+	_task_id				TASK_ID;
+	uint8_t					DATA[DATA_SIZE];
+} USER_MESSAGE, * USER_MESSAGE_PTR;
+
+
 /*
 ** ===================================================================
-**     Callback    : serial_task
+**     Callback    : handler_task
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void serial_task(os_task_param_t task_init_data);
-
-
+void handler_task(os_task_param_t task_init_data);
 /* END os_tasks */
 
 #ifdef __cplusplus

@@ -11,7 +11,7 @@
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         serial_task - void serial_task(os_task_param_t task_init_data);
+**         handler_task - void handler_task(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
@@ -37,21 +37,31 @@
 extern "C" {
 #endif 
 
+typedef struct rw_privileges
+{
+	_queue_id QUEUE_ID;
+	_task_id TASK_ID;
+	struct rw_privileges * NEXT;
+} RW_PRIVILEGES, * RW_PRIVILEGES_PTR;
+
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 /*
 ** ===================================================================
-**     Callback    : serial_task
+**     Callback    : handler_task
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void serial_task(os_task_param_t task_init_data)
+void handler_task(os_task_param_t task_init_data)
 {
   /* Write your local variable definition here */
+	RW_PRIVILEGES_PTR read_privs_head = NULL;
+	RW_PRIVILEGES_PTR write_privs_head = NULL;
+
 	printf("serialTask Created!\n\r");
 
 	char buf[13];

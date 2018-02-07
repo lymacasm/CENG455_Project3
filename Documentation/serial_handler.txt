@@ -270,8 +270,8 @@ Module "osa1"      (component fsl_os_abstraction)
    - osa1_OSA_Init -Initializes the RTOS services.
    - osa1_OSA_Start -Starts the RTOS.
 
-Module "serialTask" (component OS_Task)
-   - serialTask_Init -Creates and starts a task.
+Module "handlerTask" (component OS_Task)
+   - handlerTask_Init -Creates and starts a task.
 
 Module "myUART"    (component fsl_uart)
    - myUART_UART_DRV_Init -Initializes an UART instance for operation.

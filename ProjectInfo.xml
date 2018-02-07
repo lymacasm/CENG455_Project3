@@ -117,12 +117,12 @@
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\clockMan1.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\fsl_hwtimer1.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\fsl_mpu1.c</PathName>
+      <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\handlerTask.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\hardware_init.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\mqx_ksdk.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\myUART.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\osa1.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\pin_init.c</PathName>
-      <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\serialTask.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\uart1.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\SDK\platform\devices\MK64F12\startup\system_MK64F12.c</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\SDK\platform\devices\startup.c</PathName>
@@ -269,11 +269,11 @@
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\clockMan1.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\fsl_hwtimer1.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\fsl_mpu1.h</PathName>
+      <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\handlerTask.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\mqx_ksdk.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\myUART.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\osa1.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\pin_init.h</PathName>
-      <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\serialTask.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\Generated_Code\uart1.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\SDK\platform\CMSIS\Include\arm_common_tables.h</PathName>
       <PathName>C:\Users\lymacasm\Documents\Project2_1\serial_handler\SDK\platform\CMSIS\Include\arm_const_structs.h</PathName>
