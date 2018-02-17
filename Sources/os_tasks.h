@@ -50,9 +50,12 @@ extern "C" {
 #endif 
 
 #define DATA_SIZE	  8
+#define RX_QUEUE_SIZE 8
+#define USER_QUEUE_SIZE 32
 
 /* Queue IDs */
 #define RX_QUEUE      8
+#define USER_QUEUE    9
 
 typedef enum request_cmd
 {
@@ -65,7 +68,8 @@ typedef enum request_cmd
 	READ,
 	READ_ACK,
 	WRITE,
-	WRITE_ACK
+	WRITE_ACK,
+	UNKNOWN_ACK
 } _request_cmd;
 
 typedef enum status
@@ -77,7 +81,7 @@ typedef enum status
 typedef struct rx_message
 {
 	MESSAGE_HEADER_STRUCT   HEADER;
-	char					DATA;
+	uint8_t					DATA;
 	uint8_t					RESERVED[3];
 } RX_MESSAGE, * RX_MESSAGE_PTR;
 
