@@ -154,6 +154,12 @@ void handler_task(os_task_param_t task_init_data)
 	uint8_t rx_buf_idx = 0;
 	uint8_t tx_len = 0;
 
+	printf("handlerTask Created!\n\r");
+
+	char buf[13];
+	sprintf(buf, "\n\rType here: ");
+	UART_DRV_SendDataBlocking(myUART_IDX, (uint8_t*)buf, sizeof(buf), 1000);
+
 	/* Open message queues */
 	rx_qid = _msgq_open(RX_QUEUE, 0);
 	if(_task_get_error() != MQX_OK)
@@ -256,7 +262,7 @@ void handler_task(os_task_param_t task_init_data)
 				UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, tx_len);
 				tx_len = 0;
 			}
-		}
+		} /* End processing of RX ISR requests */
 
 		/* Deal with user requests */
 		if(user_msg_count > 0)
@@ -340,9 +346,8 @@ void handler_task(os_task_param_t task_init_data)
 						uint8_t buf_cpy[DATA_SIZE];
 						uint32_t bytes_remaining = 0;
 						while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
-						memcpy(buf_cpy, tx_buf, tx_len);
-						UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, tx_len);
-						tx_len = 0;
+						strcpy(buf_cpy, user_msg_ptr->DATA);
+						UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, strlen(buf_cpy));
 					}
 					break;
 				default:
@@ -350,15 +355,11 @@ void handler_task(os_task_param_t task_init_data)
 					user_msg_ptr->CMD_ID = UNKNOWN_ACK;
 					user_msg_ptr->STATUS = FAILURE;
 				}
+				/* Send response */
+				_msgq_send(user_msg_ptr);
 			}
 		}
 	}
-
-	printf("serialTask Created!\n\r");
-
-	char buf[13];
-	sprintf(buf, "\n\rType here: ");
-	UART_DRV_SendDataBlocking(myUART_IDX, (uint8_t*)buf, sizeof(buf), 1000);
   
 #ifdef PEX_USE_RTOS
   while (1) {
