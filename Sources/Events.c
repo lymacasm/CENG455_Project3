@@ -31,11 +31,14 @@
 #include "Events.h"
 #include "rtos_main_task.h"
 #include "os_tasks.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+/* queue id */
+#define RX_QUEUE_SENDING 10
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -52,10 +55,55 @@ extern "C" {
 */
 void myUART_RxCallback(uint32_t instance, void * uartState)
 {
-  /* Write your code here ... */
-	while(sizeof(myRxBuff))
+	static uint8_t message_pool_closed = 1;
+	static _queue_id rx_qid;
+	RX_MESSAGE_PTR msg_ptr;
 
-	UART_DRV_SendData(myUART_IDX, myRxBuff, sizeof(myRxBuff));
+	/* Message queue initialization code */
+	if(message_pool_closed)
+	{
+		rx_qid = _msgq_open((_queue_number)RX_QUEUE_SENDING, 0);
+		if(_task_get_error() != MQX_OK)
+		{
+			printf("Failed to open RX ISR sending message queue.\n");
+			printf("Error code: %x\n", MQX_OK);
+			return;
+		}
+		message_pool_closed = 0; // Set to false for not closed
+	}
+
+  /* Write your code here ... */
+	msg_ptr = (RX_MESSAGE_PTR)_msg_alloc(rx_msg_pool);
+	if(msg_ptr == NULL)
+	{
+		printf("Could not allocate a message from the RX ISR\n");
+		return;
+	}
+
+	/* Setup the message */
+	msg_ptr->HEADER.SOURCE_QID = rx_qid;
+	msg_ptr->HEADER.TARGET_QID = _msgq_get_id(0, RX_QUEUE);
+	msg_ptr->HEADER.SIZE = sizeof(RX_MESSAGE);
+	msg_ptr->DATA = myRxBuff[0];
+
+	/* Check if msgq_get_id worked */
+	/* NOTE: No MQX call can be inserted between _msgq_get_id and this check */
+	if(_task_get_error() != MQX_OK)
+	{
+		printf("Failed to get the queue ID for the RX queue.\n");
+		printf("Error code: %x\n", MQX_OK);
+		return;
+	}
+
+	/* Send message */
+	_msgq_send(msg_ptr);
+	if(_task_get_error() != MQX_OK)
+	{
+		printf("Failed to send message from RX ISR to Handler.\n");
+		printf("Error code: %x\n", MQX_OK);
+		return;
+	}
+	//UART_DRV_SendData(myUART_IDX, myRxBuff, sizeof(myRxBuff));
 }
 
 /* END Events */

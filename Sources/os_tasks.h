@@ -94,6 +94,8 @@ typedef struct user_message
 	uint8_t					DATA[DATA_SIZE];
 } USER_MESSAGE, * USER_MESSAGE_PTR;
 
+extern _pool_id rx_msg_pool;
+extern _pool_id user_msg_pool;
 
 /*
 ** ===================================================================
