@@ -40,6 +40,8 @@ extern "C" {
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
+#define READ_QUEUE 15
+
 typedef struct rw_privileges
 {
 	_queue_id QUEUE_ID;
@@ -244,17 +246,102 @@ void handler_task(os_task_param_t task_init_data)
 					tx_len = 3;
 				}
 				/* Check for newline character */
-				if(rx_msg_ptr->DATA == '\r' || rx_msg_ptr->DATA == '\n')
+				else if(rx_msg_ptr->DATA == '\r' || rx_msg_ptr->DATA == '\n')
 				{
+					RW_PRIVILEGES_PTR priv_searcher = read_privs_head;
+					_queue_id handler_qid;
+
 					/* Setup tx */
 					tx_buf[0] = 0x1B; // ESCAPE SEQUENCE
 					tx_buf[1] = 'E';
 					tx_len = 2;
+
+					/* Open message queue */
+					handler_qid = _msgq_open(READ_QUEUE, 0);
+
+					/* Send data back to all tasks with read privileges */
+					while(priv_searcher != NULL)
+					{
+						USER_MESSAGE_PTR read_msg;
+						_queue_id target_qid;
+
+						/* Grab the target qid */
+						target_qid = priv_searcher->QUEUE_ID;
+
+						/* Allocate message */
+						read_msg = (USER_MESSAGE_PTR) _msg_alloc(user_msg_pool);
+						if(read_msg == NULL)
+						{
+							printf("Could not allocate a message for read broadcast\n");
+							continue;
+						}
+
+						read_msg->HEADER.SOURCE_QID = handler_qid;
+						read_msg->HEADER.TARGET_QID = target_qid;
+						read_msg->HEADER.SIZE = sizeof(USER_MESSAGE);
+						read_msg->CMD_ID = READ;
+
+						/* TODO: NULL terminate data */
+						memcpy(read_msg->DATA, rx_buf, rx_buf_idx);
+
+						/* Send message */
+						_msgq_send(read_msg);
+
+						/* Go to next element */
+						priv_searcher = priv_searcher->NEXT;
+					}
+				}
+				/* Check for erase line command */
+				else if(rx_msg_ptr->DATA == 0x15)
+				{
+					rx_buf_idx = 0;
+
+					/* Delete line */
+					tx_buf[0] = 0x1B; // ESCAPE SEQUENCE
+					tx_buf[1] = '[';
+					tx_buf[2] = '2';
+					tx_buf[3] = 'K';
+
+					/* Next line */
+					tx_buf[4] = 0x1B; // ESCAPE SEQUENCE
+					tx_buf[5] = 'E';
+
+					/* Back up to last line */
+					tx_buf[6] = 0x1B;
+					tx_buf[7] = '[';
+					tx_buf[8] = 0x1;
+					tx_buf[9] = 'A';
+					tx_len = 10;
+				}
+				/* Check for erase word command */
+				else if(rx_msg_ptr->DATA == 0x17)
+				{
+					uint8_t i;
+					uint8_t last_space = 0;
+					for(i = 0; i < rx_buf_idx; i++)
+					{
+						if(rx_buf[i] == ' ') last_space = i;
+					}
+
+					/* Move cursor to the last_space position */
+					tx_buf[0] = 0x1B; // ESCAPE SEQUENCE
+					tx_buf[1] = '[';
+					tx_buf[2] = ((i - last_space) & 0xFF);
+					tx_buf[3] = 'D';
+
+					/* Clear line from cursor right */
+					tx_buf[4] = 0x1B; // ESCAPE SEQUENCE
+					tx_buf[5] = '[';
+					tx_buf[6] = 'K';
+					tx_len = 7;
+
+					rx_buf_idx = last_space;
 				}
 				/* TODO: Add a bunch of else if's for each command */
-				else if(isprint(rx_msg_ptr->DATA))
+				else if(isprint(rx_msg_ptr->DATA) && rx_buf_idx < DATA_SIZE)
 				{
 					rx_buf[rx_buf_idx] = rx_msg_ptr->DATA;
+					rx_buf_idx++;
 					tx_buf[0] = rx_msg_ptr->DATA;
 					tx_len = 1;
 				}

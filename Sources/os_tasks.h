@@ -49,7 +49,7 @@
 extern "C" {
 #endif 
 
-#define DATA_SIZE	  8
+#define DATA_SIZE	  16
 #define RX_QUEUE_SIZE 8
 #define USER_QUEUE_SIZE 32
 
