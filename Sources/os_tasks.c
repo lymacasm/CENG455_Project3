@@ -39,8 +39,6 @@ extern "C" {
 #endif 
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
-#define RX_BUFFER_SIZE 32
-#define TX_BUFFER_SIZE 8
 
 typedef struct rw_privileges
 {
@@ -149,8 +147,8 @@ void handler_task(os_task_param_t task_init_data)
 	USER_MESSAGE_PTR user_msg_ptr = NULL;
 	_queue_id rx_qid;
 	_queue_id user_qid;
-	char rx_buf[RX_BUFFER_SIZE];
-	char tx_buf[TX_BUFFER_SIZE];
+	char rx_buf[DATA_SIZE];
+	char tx_buf[DATA_SIZE];
 	uint8_t rx_buf_idx = 0;
 	uint8_t tx_len = 0;
 
@@ -237,13 +235,21 @@ void handler_task(os_task_param_t task_init_data)
 			else
 			{
 				/* Check for \b (backspace) */
-				if(rx_msg_ptr->DATA == 0x8)
+				if(rx_msg_ptr->DATA == '\b')
 				{
 					if(rx_buf_idx > 0) --rx_buf_idx;
-					tx_buf[0] = 0x8; // Backspace
+					tx_buf[0] = '\b'; // Backspace
 					tx_buf[1] = ' '; // Space
-					tx_buf[2] = 0x8; // Backspace
+					tx_buf[2] = '\b'; // Backspace
 					tx_len = 3;
+				}
+				/* Check for newline character */
+				if(rx_msg_ptr->DATA == '\r' || rx_msg_ptr->DATA == '\n')
+				{
+					/* Setup tx */
+					tx_buf[0] = 0x1B; // ESCAPE SEQUENCE
+					tx_buf[1] = 'E';
+					tx_len = 2;
 				}
 				/* TODO: Add a bunch of else if's for each command */
 				else if(isprint(rx_msg_ptr->DATA))
@@ -260,7 +266,7 @@ void handler_task(os_task_param_t task_init_data)
 			/* Transmit data back through UART */
 			if(tx_len > 0)
 			{
-				char buf_cpy[TX_BUFFER_SIZE];
+				char buf_cpy[DATA_SIZE];
 				uint32_t bytes_remaining = 0;
 				while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
 				memcpy(buf_cpy, tx_buf, tx_len);
@@ -344,6 +350,7 @@ void handler_task(os_task_param_t task_init_data)
 					break;
 				case (WRITE):
 					user_msg_ptr->CMD_ID = WRITE_ACK;
+					user_msg_ptr->STATUS = FAILURE;
 					/* Check if task has write privilege */
 					if(find_privilege(write_privs_head, user_msg_ptr->TASK_ID) != 0)
 					{
@@ -353,6 +360,7 @@ void handler_task(os_task_param_t task_init_data)
 						while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
 						strcpy((char*)buf_cpy, (char*)user_msg_ptr->DATA);
 						UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, strlen((char*)buf_cpy));
+						user_msg_ptr->STATUS = SUCCESS;
 					}
 					break;
 				default:
