@@ -160,7 +160,7 @@ void handler_task(os_task_param_t task_init_data)
 	sprintf(buf, "\n\rType here: ");
 	UART_DRV_SendDataBlocking(myUART_IDX, (uint8_t*)buf, sizeof(buf), 1000);
 
-	/* Open message queues */
+	/* Open RX ISR message queue */
 	rx_qid = _msgq_open(RX_QUEUE, 0);
 	if(_task_get_error() != MQX_OK)
 	{
@@ -169,15 +169,7 @@ void handler_task(os_task_param_t task_init_data)
 		exit(1);
 	}
 
-	user_qid = _msgq_open(USER_QUEUE, 0);
-	if(_task_get_error() != MQX_OK)
-	{
-		printf("Failed to open User message queue.\n");
-		printf("Error code: %x\n", MQX_OK);
-		exit(1);
-	}
-
-	/* Create message pools */
+	/* Create RX ISR message pool */
 	rx_msg_pool = _msgpool_create(sizeof(RX_MESSAGE), RX_QUEUE_SIZE, 0, 0);
 	if(_task_get_error() != MQX_OK)
 	{
@@ -186,6 +178,16 @@ void handler_task(os_task_param_t task_init_data)
 		exit(1);
 	}
 
+	/* Open User message queue */
+	user_qid = _msgq_open(USER_QUEUE, 0);
+	if(_task_get_error() != MQX_OK)
+	{
+		printf("Failed to open User message queue.\n");
+		printf("Error code: %x\n", MQX_OK);
+		exit(1);
+	}
+
+	/* Create User message pool */
 	user_msg_pool = _msgpool_create(sizeof(USER_MESSAGE), USER_QUEUE_SIZE, 0, 0);
 	if(_task_get_error() != MQX_OK)
 	{
@@ -234,13 +236,13 @@ void handler_task(os_task_param_t task_init_data)
 			/* Process received data */
 			else
 			{
-				/* Check for ^H (backspace) */
-				if(rx_msg_ptr->DATA == 0x28)
+				/* Check for \b (backspace) */
+				if(rx_msg_ptr->DATA == 0x8)
 				{
 					if(rx_buf_idx > 0) --rx_buf_idx;
-					tx_buf[0] = 0x28; // Backspace
+					tx_buf[0] = 0x8; // Backspace
 					tx_buf[1] = ' '; // Space
-					tx_buf[2] = 0x28; // Backspace
+					tx_buf[2] = 0x8; // Backspace
 					tx_len = 3;
 				}
 				/* TODO: Add a bunch of else if's for each command */
@@ -250,6 +252,9 @@ void handler_task(os_task_param_t task_init_data)
 					tx_buf[0] = rx_msg_ptr->DATA;
 					tx_len = 1;
 				}
+
+				/* Free message */
+				_msg_free(rx_msg_ptr);
 			}
 
 			/* Transmit data back through UART */
@@ -346,8 +351,8 @@ void handler_task(os_task_param_t task_init_data)
 						uint8_t buf_cpy[DATA_SIZE];
 						uint32_t bytes_remaining = 0;
 						while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
-						strcpy(buf_cpy, user_msg_ptr->DATA);
-						UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, strlen(buf_cpy));
+						strcpy((char*)buf_cpy, (char*)user_msg_ptr->DATA);
+						UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, strlen((char*)buf_cpy));
 					}
 					break;
 				default:
