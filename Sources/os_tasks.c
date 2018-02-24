@@ -40,7 +40,12 @@ extern "C" {
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
+/* Message queues */
 #define READ_QUEUE 15
+
+/* Data sizes */
+#define RX_BUF_SIZE (DATA_SIZE - 1)
+#define TX_BUF_SIZE DATA_SIZE
 
 typedef struct rw_privileges
 {
@@ -149,8 +154,8 @@ void handler_task(os_task_param_t task_init_data)
 	USER_MESSAGE_PTR user_msg_ptr = NULL;
 	_queue_id rx_qid;
 	_queue_id user_qid;
-	char rx_buf[DATA_SIZE];
-	char tx_buf[DATA_SIZE];
+	char rx_buf[RX_BUF_SIZE];
+	char tx_buf[TX_BUF_SIZE];
 	uint8_t rx_buf_idx = 0;
 	uint8_t tx_len = 0;
 
@@ -206,7 +211,7 @@ void handler_task(os_task_param_t task_init_data)
 		if(rx_msg_count == 0 && _task_get_error() != MQX_OK)
 		{
 			printf("Failed to check pending RX ISR message count.\n");
-			printf("Error code: %x\n", MQX_OK);
+			printf("Error code: %d\n", _task_get_error());
 			_task_set_error(MQX_OK);
 		}
 
@@ -214,7 +219,7 @@ void handler_task(os_task_param_t task_init_data)
 		if(user_msg_count == 0 && _task_get_error() != MQX_OK)
 		{
 			printf("Failed to check pending User message count.\n");
-			printf("Error code: %x\n", MQX_OK);
+			printf("Error code: %d\n", _task_get_error());
 			_task_set_error(MQX_OK);
 		}
 
@@ -245,7 +250,7 @@ void handler_task(os_task_param_t task_init_data)
 					tx_buf[2] = '\b'; // Backspace
 					tx_len = 3;
 				}
-				/* Check for newline character */
+				/* Check for newline character and send data to listeners */
 				else if(rx_msg_ptr->DATA == '\r' || rx_msg_ptr->DATA == '\n')
 				{
 					RW_PRIVILEGES_PTR priv_searcher = read_privs_head;
@@ -258,6 +263,12 @@ void handler_task(os_task_param_t task_init_data)
 
 					/* Open message queue */
 					handler_qid = _msgq_open(READ_QUEUE, 0);
+					if(_task_get_error() != MQX_OK)
+					{
+						printf("Failed to open the read message queue.\n");
+						printf("Error code: %d\n", _task_get_error());
+						_task_set_error(MQX_OK);
+					}
 
 					/* Send data back to all tasks with read privileges */
 					while(priv_searcher != NULL)
@@ -284,12 +295,32 @@ void handler_task(os_task_param_t task_init_data)
 						/* TODO: NULL terminate data */
 						memcpy(read_msg->DATA, rx_buf, rx_buf_idx);
 
+						read_msg->DATA[rx_buf_idx] = '\0';
+
 						/* Send message */
 						_msgq_send(read_msg);
+						if(_task_get_error() != MQX_OK)
+						{
+							printf("Failed to send data through the read message queue.\n");
+							printf("Error code: %d\n", _task_get_error());
+							_task_set_error(MQX_OK);
+						}
 
 						/* Go to next element */
 						priv_searcher = priv_searcher->NEXT;
 					}
+
+					/* Close message queue */
+					_msgq_close(handler_qid);
+					if(_task_get_error() != MQX_OK)
+					{
+						printf("Failed to close the read message queue.\n");
+						printf("Error code: %d\n", _task_get_error());
+						_task_set_error(MQX_OK);
+					}
+
+					/* Reset rx buffer */
+					rx_buf_idx = 0;
 				}
 				/* Check for erase line command */
 				else if(rx_msg_ptr->DATA == 0x15)
@@ -338,7 +369,7 @@ void handler_task(os_task_param_t task_init_data)
 					rx_buf_idx = last_space;
 				}
 				/* TODO: Add a bunch of else if's for each command */
-				else if(isprint(rx_msg_ptr->DATA) && rx_buf_idx < DATA_SIZE)
+				else if(isprint(rx_msg_ptr->DATA) && rx_buf_idx < RX_BUF_SIZE)
 				{
 					rx_buf[rx_buf_idx] = rx_msg_ptr->DATA;
 					rx_buf_idx++;
@@ -353,7 +384,7 @@ void handler_task(os_task_param_t task_init_data)
 			/* Transmit data back through UART */
 			if(tx_len > 0)
 			{
-				char buf_cpy[DATA_SIZE];
+				char buf_cpy[TX_BUF_SIZE];
 				uint32_t bytes_remaining = 0;
 				while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
 				memcpy(buf_cpy, tx_buf, tx_len);
@@ -442,7 +473,7 @@ void handler_task(os_task_param_t task_init_data)
 					if(find_privilege(write_privs_head, user_msg_ptr->TASK_ID) != 0)
 					{
 						/* Wait for TX to finish */
-						uint8_t buf_cpy[DATA_SIZE];
+						uint8_t buf_cpy[TX_BUF_SIZE];
 						uint32_t bytes_remaining = 0;
 						while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
 						strcpy((char*)buf_cpy, (char*)user_msg_ptr->DATA);
