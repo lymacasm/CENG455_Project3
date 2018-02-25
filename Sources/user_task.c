@@ -1,74 +1,80 @@
 /* ###################################################################
-**     Filename    : Events.h
+**     Filename    : user_task.c
 **     Project     : serial_handler
 **     Processor   : MK64FN1M0VLL12
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-02-06, 17:09, # CodeGen: 0
+**     Date/Time   : 2018-02-24, 19:11, # CodeGen: 3
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         No public methods
+**         user_task - void user_task(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
-** @file Events.h
+** @file user_task.c
 ** @version 01.00
 ** @brief
 **         This is user's event module.
 **         Put your event handler code here.
 */         
 /*!
-**  @addtogroup Events_module Events module documentation
+**  @addtogroup user_task_module user_task module documentation
 **  @{
 */         
+/* MODULE user_task */
 
-#ifndef __Events_H
-#define __Events_H
-/* MODULE Events */
-
-#include "fsl_device_registers.h"
-#include "clockMan1.h"
-#include "pin_init.h"
-#include "osa1.h"
-#include "mqx_ksdk.h"
-#include "uart1.h"
-#include "fsl_mpu1.h"
-#include "fsl_hwtimer1.h"
-#include "MainTask.h"
-#include "handlerTask.h"
-#include "myUART.h"
-#include "UserTask.h"
+#include "Cpu.h"
+#include "Events.h"
+#include "rtos_main_task.h"
+#include "os_tasks.h"
+#include "user_task.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
 
+/* User includes (#include below this line is not maintained by Processor Expert) */
+
 /*
 ** ===================================================================
-**     Callback    : myUART_RxCallback
-**     Description : This callback occurs when data are received.
+**     Callback    : user_task
+**     Description : Task function entry.
 **     Parameters  :
-**       instance - The UART instance number.
-**       uartState - A pointer to the UART driver state structure
-**       memory.
+**       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void myUART_RxCallback(uint32_t instance, void * uartState);
+void user_task(os_task_param_t task_init_data)
+{
+  /* Write your local variable definition here */
+  
+#ifdef PEX_USE_RTOS
+  while (1) {
+#endif
+    /* Write your code here ... */
+    
+    
+    OSA_TimeDelay(10);                 /* Example code (for task release) */
+   
+    
+    
+    
+#ifdef PEX_USE_RTOS   
+  }
+#endif    
+}
 
-/* END Events */
+/* END user_task */
 
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif 
 
-#endif 
-/* ifndef __Events_H*/
 /*!
 ** @}
 */

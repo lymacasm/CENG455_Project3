@@ -32,6 +32,7 @@
 #include "Events.h"
 #include "rtos_main_task.h"
 #include "os_tasks.h"
+#include "user_task.h"
 #include "clockMan1.h"
 #include "pin_init.h"
 #include "osa1.h"
@@ -42,6 +43,7 @@
 #include "MainTask.h"
 #include "handlerTask.h"
 #include "myUART.h"
+#include "UserTask.h"
 #if CPU_INIT_CONFIG
   #include "Init_Config.h"
 #endif
