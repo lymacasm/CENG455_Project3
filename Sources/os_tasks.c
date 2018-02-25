@@ -56,7 +56,7 @@ typedef struct rw_privileges
 
 _pool_id rx_msg_pool;
 _pool_id user_msg_pool;
-uint8_t user_pool_created = 0;
+volatile uint8_t user_pool_created = 0;
 
 static _queue_id find_privilege(RW_PRIVILEGES_PTR priv_head, _task_id tid)
 {
@@ -204,7 +204,9 @@ void handler_task(os_task_param_t task_init_data)
 
 	user_pool_created = 1;
 
+#ifdef PEX_USE_RTOS
 	while(TRUE)
+#endif
 	{
 		uint16_t rx_msg_count = 0;
 		uint16_t user_msg_count = 0;
@@ -493,22 +495,8 @@ void handler_task(os_task_param_t task_init_data)
 				_msgq_send(user_msg_ptr);
 			}
 		}
+		OSA_TimeDelay(10);                 /* Example code (for task release) */
 	}
-  
-#ifdef PEX_USE_RTOS
-  while (1) {
-#endif
-    /* Write your code here ... */
-    
-    
-    OSA_TimeDelay(10);                 /* Example code (for task release) */
-   
-    
-    
-    
-#ifdef PEX_USE_RTOS   
-  }
-#endif    
 }
 
 /* END os_tasks */

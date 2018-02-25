@@ -75,7 +75,9 @@ void main_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
-	OpenR(main_qid);
+	printf("Gonna get read privilege.\n");
+	if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
+
 
 #ifdef PEX_USE_RTOS
 	while (1) {
@@ -84,9 +86,9 @@ void main_task(os_task_param_t task_init_data)
 		char string[DATA_SIZE + 1];
 		if(!_get_line(string))
 		{
-			printf("main task: failed to get line...");
+			printf("main task: failed to get line...\n");
 		}
-		printf("main task: %s", string);
+		printf("main task: %s\n", string);
 
 		OSA_TimeDelay(10);    /* Example code (for task release) */
    
