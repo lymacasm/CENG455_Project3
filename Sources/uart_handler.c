@@ -8,7 +8,7 @@
 #include "os_tasks.h"
 #include <stdio.h>
 
-#define USER_QUEUE_SENDING 11
+#define USER_QUEUE_SENDING 4
 
 extern bool OpenR(uint16_t stream_no)
 {

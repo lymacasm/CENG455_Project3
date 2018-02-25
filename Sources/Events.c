@@ -39,7 +39,7 @@ extern "C" {
 #endif 
 
 /* queue id */
-#define RX_QUEUE_SENDING 10
+#define RX_QUEUE_SENDING 3
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -104,7 +104,7 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to send message from RX ISR to Handler.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		return;
 	}
