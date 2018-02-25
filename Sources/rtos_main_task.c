@@ -60,6 +60,7 @@ void main_task(os_task_param_t task_init_data)
 {
 	/* Write your local variable definition here */
 	_queue_id main_qid;
+	_queue_id write_qid;
 
 	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
@@ -75,9 +76,10 @@ void main_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
-	printf("Gonna get read privilege.\n");
+	printf("Gonna get read/write privileges.\n");
 	if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
-
+	write_qid = OpenW();
+	if(write_qid) printf("Successfully got write privileges.\n");
 
 #ifdef PEX_USE_RTOS
 	while (1) {
@@ -89,13 +91,24 @@ void main_task(os_task_param_t task_init_data)
 			printf("main task: failed to get line...\n");
 			_task_block();
 		}
-		printf("main task: %s\n", string);
+		if(strcmp("Hello", string) == 0)
+		{
+			_putline(write_qid, "Hi!\r");
+		}
+		else if(strcmp("CLOSE", string) == 0)
+		{
+			if(Close()) printf("Closed connections!\n");
+			else printf("Failed to close connections!\n");
+			if(_get_line(string)) printf("I got a line even when I didn't have privileges...\n");
+			if(_putline(write_qid, "Hola\r")) printf("I printed without write privileges...\n");
+		}
 
 		OSA_TimeDelay(10);    /* Example code (for task release) */
    
 #ifdef PEX_USE_RTOS   
 	}
 #endif    
+	_task_block();
 }
 
 /* END rtos_main_task */

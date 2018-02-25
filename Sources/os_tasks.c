@@ -41,6 +41,7 @@ extern "C" {
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 /* Message queues */
+#define WRITE_QUEUE 14
 #define READ_QUEUE 15
 
 /* Data sizes */
@@ -153,12 +154,15 @@ void handler_task(os_task_param_t task_init_data)
 	RW_PRIVILEGES_PTR write_privs_head = NULL;
 	RX_MESSAGE_PTR rx_msg_ptr = NULL;
 	USER_MESSAGE_PTR user_msg_ptr = NULL;
+	USER_MESSAGE_PTR write_msg_ptr = NULL;
 	_queue_id rx_qid;
 	_queue_id user_qid;
+	_queue_id write_qid;
 	char rx_buf[RX_BUF_SIZE];
 	char tx_buf[TX_BUF_SIZE];
 	uint8_t rx_buf_idx = 0;
 	uint8_t tx_len = 0;
+	uint8_t write_msgq_open = 0;
 
 	printf("handlerTask Created!\n\r");
 
@@ -210,6 +214,7 @@ void handler_task(os_task_param_t task_init_data)
 	{
 		uint16_t rx_msg_count = 0;
 		uint16_t user_msg_count = 0;
+		uint16_t write_msg_count = 0;
 
 		/* Get the message counts */
 		rx_msg_count = _msgq_get_count(rx_qid);
@@ -226,6 +231,17 @@ void handler_task(os_task_param_t task_init_data)
 			printf("Failed to check pending User message count.\n");
 			printf("Error code: %d\n", _task_get_error());
 			_task_set_error(MQX_OK);
+		}
+
+		if(write_msgq_open)
+		{
+			write_msg_count = _msgq_get_count(write_qid);
+			if(user_msg_count == 0 && _task_get_error() != MQX_OK)
+			{
+				printf("Failed to check pending User message count.\n");
+				printf("Error code: %d\n", _task_get_error());
+				_task_set_error(MQX_OK);
+			}
 		}
 
 		/* This section of code handles data coming in from the ISR
@@ -440,8 +456,21 @@ void handler_task(os_task_param_t task_init_data)
 					user_msg_ptr->CMD_ID = WRITE_PRIV_ACK;
 					if(write_privs_head == NULL)
 					{
-						user_msg_ptr->STATUS = add_privilege(&write_privs_head,
-								user_msg_ptr->TASK_ID, 0xFFFF);
+						write_qid = _msgq_open((_queue_id)WRITE_QUEUE, 0);
+						if(_task_get_error() != MQX_OK)
+						{
+							printf("Failed to open write message queue\n");
+							printf("Error: %x", _task_get_error());
+							_task_set_error(MQX_OK);
+							user_msg_ptr->STATUS = FAILURE;
+						}
+						else {
+							user_msg_ptr->STATUS = add_privilege(&write_privs_head,
+									user_msg_ptr->TASK_ID, 0xFFFF);
+							user_msg_ptr->DATA[0] = (write_qid & 0xFF00) >> 8;
+							user_msg_ptr->DATA[1] = (write_qid & 0xFF);
+							write_msgq_open = 1;
+						}
 					}
 					else
 					{
@@ -451,10 +480,24 @@ void handler_task(os_task_param_t task_init_data)
 				case (CLOSE):
 					user_msg_ptr->CMD_ID = CLOSE_ACK;
 					/* If either of the read or write removals are successful, the entire operation is a success (OR) */
-					user_msg_ptr->STATUS = remove_privilege(&read_privs_head,
+					uint8_t read_remove = remove_privilege(&read_privs_head,
 							user_msg_ptr->TASK_ID);
-					user_msg_ptr->STATUS |= remove_privilege(&write_privs_head,
+					uint8_t write_remove = remove_privilege(&write_privs_head,
 							user_msg_ptr->TASK_ID);
+					user_msg_ptr->STATUS = read_remove | write_remove;
+					if(write_remove == SUCCESS)
+					{
+						_msgq_close(write_qid);
+						if(_task_get_error() != MQX_OK)
+						{
+							printf("Failed to close write message queue\n");
+							printf("Error: %x\n", _task_get_error());
+							_task_set_error(MQX_OK);
+							user_msg_ptr->STATUS = FAILURE;
+						}
+						write_qid = 0;
+						write_msgq_open = 0;
+					}
 					break;
 				case (READ):
 					user_msg_ptr->CMD_ID = READ_ACK;
@@ -474,17 +517,6 @@ void handler_task(os_task_param_t task_init_data)
 				case (WRITE):
 					user_msg_ptr->CMD_ID = WRITE_ACK;
 					user_msg_ptr->STATUS = FAILURE;
-					/* Check if task has write privilege */
-					if(find_privilege(write_privs_head, user_msg_ptr->TASK_ID) != 0)
-					{
-						/* Wait for TX to finish */
-						uint8_t buf_cpy[TX_BUF_SIZE];
-						uint32_t bytes_remaining = 0;
-						while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
-						strcpy((char*)buf_cpy, (char*)user_msg_ptr->DATA);
-						UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, strlen((char*)buf_cpy));
-						user_msg_ptr->STATUS = SUCCESS;
-					}
 					break;
 				default:
 					/* Not a valid command */
@@ -493,6 +525,42 @@ void handler_task(os_task_param_t task_init_data)
 				}
 				/* Send response */
 				_msgq_send(user_msg_ptr);
+			}
+		}
+
+		if(write_msg_count > 0)
+		{
+			write_msg_ptr = _msgq_receive(write_qid, 0);
+			if(_task_get_error() != MQX_OK)
+			{
+				printf("Failed to receive Write message.\n");
+				printf("Error code: %x\n", MQX_OK);
+				_task_set_error(MQX_OK);
+			}
+			else
+			{
+				/* Switch destination and source */
+				write_msg_ptr->HEADER.TARGET_QID = write_msg_ptr->HEADER.SOURCE_QID;
+				write_msg_ptr->HEADER.SOURCE_QID = write_qid;
+
+				/* Set type and default to failure */
+				write_msg_ptr->CMD_ID = WRITE_ACK;
+				write_msg_ptr->STATUS = FAILURE;
+
+				/* Check if task has write privilege */
+				if(find_privilege(write_privs_head, user_msg_ptr->TASK_ID) != 0)
+				{
+					/* Wait for TX to finish */
+					uint8_t buf_cpy[TX_BUF_SIZE];
+					uint32_t bytes_remaining = 0;
+					while(UART_DRV_GetTransmitStatus(myUART_IDX, &bytes_remaining) != kStatus_UART_Success);
+					strncpy((char*)buf_cpy, (char*)write_msg_ptr->DATA, TX_BUF_SIZE);
+					UART_DRV_SendData(myUART_IDX, (uint8_t*)buf_cpy, strlen((char*)buf_cpy));
+					write_msg_ptr->STATUS = SUCCESS;
+				}
+
+				/* Send response */
+				_msgq_send(write_msg_ptr);
 			}
 		}
 		OSA_TimeDelay(10);                 /* Example code (for task release) */

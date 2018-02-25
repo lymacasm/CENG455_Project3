@@ -95,6 +95,7 @@ extern _queue_id OpenW()
 	// return based on status
 
 	_queue_id user_qid;
+	_queue_id write_qid;
 	USER_MESSAGE_PTR msg_ptr;
 
 	// Message queue initialization code
@@ -102,13 +103,17 @@ extern _queue_id OpenW()
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
-		return FALSE;
+		return 0;
+	}
+
+	while(user_pool_created != 1) {
+		OSA_TimeDelay(50);
 	}
 
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
-		return FALSE;
+		return 0;
 	}
 
 	// Setup the message
@@ -126,7 +131,7 @@ extern _queue_id OpenW()
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to send message from USER task to Handler.\n");
 		printf("Error code: %x\n", _task_get_error());
-		return FALSE;
+		return 0;
 	}
 
 	 // Wait for the return message:
@@ -134,21 +139,24 @@ extern _queue_id OpenW()
 
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
-		 printf("User Task failed to acquire Read Privileges!");
-		 return FALSE;
+		 printf("User Task failed to receive write reply!");
+		 return 0;
 	 }
 
+	 /* Get the write qid */
+	 write_qid = (msg_ptr->DATA[0] << 8) | (msg_ptr->DATA[1]);
+
 	 /* Free the message: */
-	 _msg_free(msg_ptr);
+	_msg_free(msg_ptr);
+
 	_msgq_close(user_qid);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
-		return FALSE;
+		return 0;
 	}
 
-
-	return 0;
+	return write_qid;
 }
 
 extern bool _putline(_queue_id qid, const char* string)
@@ -167,6 +175,10 @@ extern bool _putline(_queue_id qid, const char* string)
 		return FALSE;
 	}
 
+	while(user_pool_created != 1) {
+		OSA_TimeDelay(50);
+	}
+
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
@@ -179,6 +191,7 @@ extern bool _putline(_queue_id qid, const char* string)
 	msg_ptr->HEADER.SIZE = sizeof(USER_MESSAGE);
 	msg_ptr->CMD_ID = WRITE;
 	msg_ptr->TASK_ID = _task_get_id();
+	strncpy((char*)msg_ptr->DATA, string, DATA_SIZE);
 
 	// Check if msgq_get_id worked
 	// NOTE: No MQX call can be inserted between _msgq_get_id and this check
@@ -196,7 +209,7 @@ extern bool _putline(_queue_id qid, const char* string)
 
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
-		 printf("User Task failed to acquire Read Privileges!");
+		 printf("User Task failed to receive write response!\n");
 		 return FALSE;
 	 }
 
@@ -234,6 +247,10 @@ extern bool _get_line(char* string)
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		return FALSE;
+	}
+
+	while(user_pool_created != 1) {
+		OSA_TimeDelay(50);
 	}
 
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
@@ -310,6 +327,10 @@ extern bool Close()
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		return FALSE;
+	}
+
+	while(user_pool_created != 1) {
+		OSA_TimeDelay(50);
 	}
 
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
