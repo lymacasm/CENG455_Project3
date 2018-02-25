@@ -70,7 +70,7 @@ static _queue_id find_privilege(RW_PRIVILEGES_PTR priv_head, _task_id tid)
 	return 0;
 }
 
-static _status add_privilege(RW_PRIVILEGES_PTR privilege_head, _task_id tid, _queue_id qid)
+static _status add_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid, _queue_id qid)
 {
 	RW_PRIVILEGES_PTR new_privilege;
 	new_privilege = _mem_alloc(sizeof(RW_PRIVILEGES));
@@ -83,17 +83,17 @@ static _status add_privilege(RW_PRIVILEGES_PTR privilege_head, _task_id tid, _qu
 	}
 	new_privilege->QUEUE_ID = qid;
 	new_privilege->TASK_ID = tid;
-	new_privilege->NEXT = privilege_head;
-	privilege_head = new_privilege;
+	new_privilege->NEXT = *privilege_head;
+	*privilege_head = new_privilege;
 	return SUCCESS;
 }
 
-static _status remove_privilege(RW_PRIVILEGES_PTR privilege_head, _task_id tid)
+static _status remove_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid)
 {
-	RW_PRIVILEGES_PTR priv_searcher = privilege_head;
+	RW_PRIVILEGES_PTR priv_searcher = *privilege_head;
 
 	/* Check for empty list */
-	if(privilege_head == NULL)
+	if(*privilege_head == NULL)
 	{
 		printf("Tried to remove privilege from empty list.\n");
 		return FAILURE;
@@ -102,7 +102,7 @@ static _status remove_privilege(RW_PRIVILEGES_PTR privilege_head, _task_id tid)
 	/* Check if the privilege to remove is the first list item */
 	if(priv_searcher->TASK_ID == tid)
 	{
-		privilege_head = priv_searcher->NEXT;
+		*privilege_head = priv_searcher->NEXT;
 		_mem_free(priv_searcher);
 		if(_task_get_error() != MQX_OK)
 		{
@@ -432,7 +432,7 @@ void handler_task(os_task_param_t task_init_data)
 						/* Get the queue id of the sending task */
 						/* ASSUMPTION : First two bytes of data contain the queue id, in Big Endian format */
 						_queue_id qid = (user_msg_ptr->DATA[0] << 8) | user_msg_ptr->DATA[1];
-						user_msg_ptr->STATUS = add_privilege(read_privs_head,
+						user_msg_ptr->STATUS = add_privilege(&read_privs_head,
 								user_msg_ptr->TASK_ID, qid);
 					}
 					break;
@@ -440,7 +440,7 @@ void handler_task(os_task_param_t task_init_data)
 					user_msg_ptr->CMD_ID = WRITE_PRIV_ACK;
 					if(write_privs_head == NULL)
 					{
-						user_msg_ptr->STATUS = add_privilege(write_privs_head,
+						user_msg_ptr->STATUS = add_privilege(&write_privs_head,
 								user_msg_ptr->TASK_ID, 0xFFFF);
 					}
 					else
@@ -451,9 +451,9 @@ void handler_task(os_task_param_t task_init_data)
 				case (CLOSE):
 					user_msg_ptr->CMD_ID = CLOSE_ACK;
 					/* If either of the read or write removals are successful, the entire operation is a success (OR) */
-					user_msg_ptr->STATUS = remove_privilege(read_privs_head,
+					user_msg_ptr->STATUS = remove_privilege(&read_privs_head,
 							user_msg_ptr->TASK_ID);
-					user_msg_ptr->STATUS |= remove_privilege(write_privs_head,
+					user_msg_ptr->STATUS |= remove_privilege(&write_privs_head,
 							user_msg_ptr->TASK_ID);
 					break;
 				case (READ):

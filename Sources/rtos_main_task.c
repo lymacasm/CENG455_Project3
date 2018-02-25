@@ -87,6 +87,7 @@ void main_task(os_task_param_t task_init_data)
 		if(!_get_line(string))
 		{
 			printf("main task: failed to get line...\n");
+			_task_block();
 		}
 		printf("main task: %s\n", string);
 
