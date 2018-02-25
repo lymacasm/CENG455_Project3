@@ -10,6 +10,8 @@
 
 #define USER_QUEUE_SENDING 4
 
+MUTEX_STRUCT print_mutex;
+
 extern bool OpenR(uint16_t stream_no)
 {
 	// ask for read priv command to handler (user queue)
@@ -20,6 +22,14 @@ extern bool OpenR(uint16_t stream_no)
 
 	_queue_id user_qid;
 	USER_MESSAGE_PTR msg_ptr;
+
+
+	// LOCK MUTEX
+	if (_mutex_lock(&print_mutex) != MQX_OK) {
+	 printf("Mutex lock failed.\n");
+	 return FALSE;
+	 }
+
 
 	// Message queue initialization code
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
@@ -95,6 +105,9 @@ extern bool OpenR(uint16_t stream_no)
 		return FALSE;
 	}
 
+	// UNLOCK MUTEX
+	_mutex_unlock(&print_mutex);
+
 	return TRUE;
 }
 
@@ -108,6 +121,12 @@ extern _queue_id OpenW()
 	_queue_id user_qid;
 	_queue_id write_qid;
 	USER_MESSAGE_PTR msg_ptr;
+
+	// LOCK MUTEX
+	if (_mutex_lock(&print_mutex) != MQX_OK) {
+	 printf("Mutex lock failed.\n");
+	 return 0;
+	 }
 
 	// Message queue initialization code
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
@@ -175,6 +194,8 @@ extern _queue_id OpenW()
 		return 0;
 	}
 
+	// UNLOCK MUTEX
+	_mutex_unlock(&print_mutex);
 	return write_qid;
 }
 

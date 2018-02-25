@@ -34,6 +34,7 @@
 #include "user_task.h"
 #include "uart_handler.h"
 #include <stdio.h>
+#include <mutex.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +42,7 @@ extern "C" {
 
 #define NUM_OF_TASK 10
 #define MAIN_QUEUE 5
+
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -61,9 +63,24 @@ extern void PEX_components_init(void);
 void main_task(os_task_param_t task_init_data)
 {
 	/* Write your local variable definition here */
-	_queue_id main_qid;
-	_queue_id write_qid;
-	uint32_t  i;
+	_queue_id 			main_qid;
+	_queue_id 			write_qid;
+	uint32_t  			i;
+	MUTEX_ATTR_STRUCT 	mutexattr;
+
+	/* Initialize mutex attributes: */
+	if (_mutatr_init(&mutexattr) != MQX_OK) {
+		printf("Initializing mutex attributes failed.\n");
+		_mqx_exit(0);
+	}
+
+	/* Initialize the mutex: */
+	if (_mutex_init(&print_mutex, &mutexattr) != MQX_OK) {
+		printf("Initializing print mutex failed.\n");
+		 _mqx_exit(0);
+	}
+
+
 
 	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT

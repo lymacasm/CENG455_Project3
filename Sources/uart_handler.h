@@ -12,6 +12,8 @@
 #include <mqx.h>
 #include <message.h>
 
+extern MUTEX_STRUCT print_mutex;
+
 extern bool OpenR(uint16_t stream_no);
 extern _queue_id OpenW();
 extern bool _putline(_queue_id qid, const char* string);
