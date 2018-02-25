@@ -80,8 +80,6 @@ void main_task(os_task_param_t task_init_data)
 		 _mqx_exit(0);
 	}
 
-
-
 	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
 	PEX_components_init();
@@ -110,7 +108,7 @@ void main_task(os_task_param_t task_init_data)
 	while (1) {
 #endif
 		/* Write your code here ... */
-		char string[DATA_SIZE + 1];
+		/*char string[DATA_SIZE + 1];
 		if(!_get_line(string))
 		{
 			printf("main task: failed to get line...\n");
@@ -134,7 +132,7 @@ void main_task(os_task_param_t task_init_data)
 			printf("OpenW\n");
 			write_qid = OpenW();
 			if(write_qid) printf("Successfully got write privileges.\n");
-		}
+		}*/
 
 		OSA_TimeDelay(10);    /* Example code (for task release) */
    

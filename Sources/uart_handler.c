@@ -25,10 +25,16 @@ extern bool OpenR(uint16_t stream_no)
 
 
 	// LOCK MUTEX
-	if (_mutex_lock(&print_mutex) != MQX_OK) {
-	 printf("Mutex lock failed.\n");
-	 return FALSE;
-	 }
+	_mqx_uint error = _mutex_lock(&print_mutex);
+	if (error != MQX_OK) {
+		printf("Mutex lock failed.\n");
+		printf("Error: %x\n", error);
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+	else{
+		printf("I got the mutex!\n");
+	}
 
 
 	// Message queue initialization code
@@ -38,6 +44,7 @@ extern bool OpenR(uint16_t stream_no)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -50,6 +57,7 @@ extern bool OpenR(uint16_t stream_no)
 		printf("Could not allocate a message from the USER\n");
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -70,6 +78,7 @@ extern bool OpenR(uint16_t stream_no)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -80,6 +89,7 @@ extern bool OpenR(uint16_t stream_no)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -88,9 +98,10 @@ extern bool OpenR(uint16_t stream_no)
 
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
-		 printf("User Task failed to acquire Read Privileges!");
+		 //printf("User Task failed to acquire Read Privileges!");
 		 _task_set_error(MQX_OK);
 		 _msgq_close(user_qid);
+		 _mutex_unlock(&print_mutex);
 		 return FALSE;
 	 }
 
@@ -102,6 +113,7 @@ extern bool OpenR(uint16_t stream_no)
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -124,9 +136,10 @@ extern _queue_id OpenW()
 
 	// LOCK MUTEX
 	if (_mutex_lock(&print_mutex) != MQX_OK) {
-	 printf("Mutex lock failed.\n");
-	 return 0;
-	 }
+		printf("Mutex lock failed.\n");
+		_task_set_error(MQX_OK);
+		return 0;
+	}
 
 	// Message queue initialization code
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
@@ -134,7 +147,7 @@ extern _queue_id OpenW()
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
-		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return 0;
 	}
 
@@ -146,6 +159,8 @@ extern _queue_id OpenW()
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
 		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return 0;
 	}
 
@@ -166,6 +181,7 @@ extern _queue_id OpenW()
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return 0;
 	}
 
@@ -174,9 +190,10 @@ extern _queue_id OpenW()
 
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
-		 printf("User Task failed to receive write reply!");
+		 //printf("User Task failed to receive write reply!");
 		 _task_set_error(MQX_OK);
 		 _msgq_close(user_qid);
+		 _mutex_unlock(&print_mutex);
 		 return 0;
 	 }
 
@@ -191,6 +208,7 @@ extern _queue_id OpenW()
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&print_mutex);
 		return 0;
 	}
 
@@ -207,6 +225,13 @@ extern bool _putline(_queue_id qid, const char* string)
 	_queue_id user_qid;
 	USER_MESSAGE_PTR msg_ptr;
 
+	// LOCK MUTEX
+	if (_mutex_lock(&print_mutex) != MQX_OK) {
+		printf("Mutex lock failed.\n");
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+
 	// Message queue initialization code
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK){
@@ -214,6 +239,7 @@ extern bool _putline(_queue_id qid, const char* string)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -226,6 +252,7 @@ extern bool _putline(_queue_id qid, const char* string)
 		printf("Could not allocate a message from the USER\n");
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -247,6 +274,7 @@ extern bool _putline(_queue_id qid, const char* string)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -255,9 +283,10 @@ extern bool _putline(_queue_id qid, const char* string)
 
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
-		 printf("User Task failed to receive write response!\n");
+		 //printf("User Task failed to receive write response!\n");
 		 _task_set_error(MQX_OK);
 		 _msgq_close(user_qid);
+		 _mutex_unlock(&print_mutex);
 		 return FALSE;
 	 }
 
@@ -269,9 +298,11 @@ extern bool _putline(_queue_id qid, const char* string)
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
+	_mutex_unlock(&print_mutex);
 
 	return TRUE;
 
@@ -290,13 +321,20 @@ extern bool _get_line(char* string)
 	_queue_id read_qid;
 	USER_MESSAGE_PTR msg_ptr;
 
+	// LOCK MUTEX
+	if (_mutex_lock(&print_mutex) != MQX_OK) {
+		printf("Mutex lock failed.\n");
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+
 	// Message queue initialization code
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
-		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -309,6 +347,7 @@ extern bool _get_line(char* string)
 		printf("Could not allocate a message from the USER\n");
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -327,6 +366,7 @@ extern bool _get_line(char* string)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -337,6 +377,7 @@ extern bool _get_line(char* string)
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -350,6 +391,7 @@ extern bool _get_line(char* string)
 		 printf("User Task read request denied!");
 		 _task_set_error(MQX_OK);
 		 _msgq_close(user_qid);
+		 _mutex_unlock(&print_mutex);
 		 return FALSE;
 	 }
 
@@ -370,8 +412,11 @@ extern bool _get_line(char* string)
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
+
+	_mutex_unlock(&print_mutex);
 
 	return TRUE;
 }
@@ -381,13 +426,20 @@ extern bool Close()
 	_queue_id user_qid;
 	USER_MESSAGE_PTR msg_ptr;
 
+	// LOCK MUTEX
+	if (_mutex_lock(&print_mutex) != MQX_OK) {
+		printf("Mutex lock failed.\n");
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+
 	// Message queue initialization code
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
-		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -400,6 +452,7 @@ extern bool Close()
 		printf("Could not allocate a message from the USER\n");
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -421,6 +474,7 @@ extern bool Close()
 		printf("Error code: %x\n", MQX_OK);
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -430,9 +484,10 @@ extern bool Close()
 
 	// Check Status
 	if (msg_ptr->STATUS == FAILURE){
-		printf("User Task failed to acquire Read Privileges!");
+		//printf("User Task failed to acquire Read Privileges!");
 		_task_set_error(MQX_OK);
 		_msgq_close(user_qid);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
 
@@ -444,8 +499,11 @@ extern bool Close()
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&print_mutex);
 		return FALSE;
 	}
+
+	_mutex_unlock(&print_mutex);
 
 	return TRUE;
 }

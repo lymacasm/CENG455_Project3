@@ -33,6 +33,7 @@
 #include "os_tasks.h"
 #include "user_task.h"
 #include "uart_handler.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,35 +55,57 @@ extern "C" {
 void user_task(os_task_param_t task_init_data)
 {
 	_queue_id user_qid;
-	_queue_id write_qid;
+	_queue_id write_qid = 0;
 
 	printf("User task %d created\n", task_init_data);
 
 	user_qid = _msgq_open((_queue_number)(USER_QUEUE_BASE +
 	task_init_data), 0);
+	if(_task_get_error() != MQX_OK)
+	{
+		printf("User%d: Failed to open user message queue!\n", task_init_data);
+		printf("User%d: Error %x", _task_get_error());
+		_task_set_error(MQX_OK);
+		_task_block();
+	}
 
 
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
-    
+    char string[DATA_SIZE + 1];
+
+
+	printf("User%d: OpenR\n", task_init_data);
 	if (OpenR(user_qid)){
-		printf("User%d: Successfully got read privileges", task_init_data);
+		printf("User%d: Successfully got read privileges\n", task_init_data);
 	}
+	printf("User%d: OpenW\n", task_init_data);
 	write_qid = OpenW();
 	if (write_qid != 0)
 	{
-		printf("User%d: Successfully got write privileges", task_init_data);
+		printf("User%d: Successfully got write privileges\n", task_init_data);
 	}
 
+	if(_get_line(string) && write_qid != 0)
+	{
+		char write_string[DATA_SIZE + 1];
+		sprintf(write_string, "User%d: %s\n\r", task_init_data, string);
+		_putline(write_qid, write_string);
+	}
+	else
+	{
+		printf("User%d: Failed to get line\n", task_init_data);
+	}
     
     OSA_TimeDelay(10);                 /* Example code (for task release) */
    
-    
+    break;
     
 #ifdef PEX_USE_RTOS   
   }
-#endif    
+#endif
+  	  _task_block();
 }
 
 /* END user_task */

@@ -202,7 +202,7 @@ void handler_task(os_task_param_t task_init_data)
 	}
 
 	/* Create User message pool */
-	user_msg_pool = _msgpool_create(sizeof(USER_MESSAGE), USER_QUEUE_SIZE, 0, 0);
+	user_msg_pool = _msgpool_create(sizeof(USER_MESSAGE), USER_QUEUE_SIZE, USER_QUEUE_SIZE, 0);
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to open User message pool.\n");
@@ -316,7 +316,8 @@ void handler_task(os_task_param_t task_init_data)
 						read_msg->HEADER.SOURCE_QID = handler_qid;
 						read_msg->HEADER.TARGET_QID = target_qid;
 						read_msg->HEADER.SIZE = sizeof(USER_MESSAGE);
-						read_msg->CMD_ID = READ;
+						read_msg->CMD_ID = READ_ACK;
+						read_msg->STATUS = SUCCESS;
 
 						/* TODO: NULL terminate data */
 						memcpy(read_msg->DATA, rx_buf, rx_buf_idx);

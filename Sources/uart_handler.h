@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <mqx.h>
 #include <message.h>
+#include "mutex.h"
 
 extern MUTEX_STRUCT print_mutex;
 
