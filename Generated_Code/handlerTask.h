@@ -66,7 +66,7 @@
 /* handlerTask task stack size */  
 #define HANDLERTASK_TASK_STACK_SIZE    1024U
 /* handlerTask task priority value */  
-#define HANDLERTASK_TASK_PRIORITY      16U
+#define HANDLERTASK_TASK_PRIORITY      15U
 /*
 ** ===================================================================
 **     Method      :  Init (component OS_Task)

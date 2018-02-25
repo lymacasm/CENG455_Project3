@@ -96,6 +96,7 @@ typedef struct user_message
 
 extern _pool_id rx_msg_pool;
 extern _pool_id user_msg_pool;
+extern uint8_t user_pool_created;
 
 /*
 ** ===================================================================

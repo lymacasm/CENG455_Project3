@@ -29,6 +29,8 @@ extern bool OpenR(uint16_t stream_no)
 		return;
 	}
 
+	while(user_pool_created != 1) OSA_TimeDelay(50);;
+
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL)
 	{

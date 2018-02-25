@@ -31,11 +31,14 @@
 #include "Events.h"
 #include "rtos_main_task.h"
 #include "os_tasks.h"
+#include "uart_handler.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+#define MAIN_QUEUE 12
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -55,27 +58,40 @@ extern void PEX_components_init(void);
 */
 void main_task(os_task_param_t task_init_data)
 {
-  /* Write your local variable definition here */
-  
-  /* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
+	/* Write your local variable definition here */
+	_queue_id main_qid;
+
+	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
-  PEX_components_init(); 
+	PEX_components_init();
 #endif 
-  /* End of Processor Expert components initialization.  */
+
+	/* End of Processor Expert components initialization.  */
+	main_qid = _msgq_open(MAIN_QUEUE, 0);
+	if(_task_get_error() != MQX_OK)
+	{
+		printf("Failed to open main message pool.\n");
+		printf("Error code: %x\n", _task_get_error());
+		_task_block();
+	}
+
+	OpenR(main_qid);
 
 #ifdef PEX_USE_RTOS
-  while (1) {
+	while (1) {
 #endif
-    /* Write your code here ... */
-    
-    
-    OSA_TimeDelay(10);                 /* Example code (for task release) */
+		/* Write your code here ... */
+		char string[DATA_SIZE + 1];
+		if(!_get_line(string))
+		{
+			printf("main task: failed to get line...");
+		}
+		printf("main task: %s", string);
+
+		OSA_TimeDelay(10);    /* Example code (for task release) */
    
-    
-    
-    
 #ifdef PEX_USE_RTOS   
-  }
+	}
 #endif    
 }
 
