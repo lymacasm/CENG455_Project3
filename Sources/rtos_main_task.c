@@ -40,7 +40,7 @@
 extern "C" {
 #endif 
 
-#define NUM_OF_TASK 10
+#define NUM_OF_TASK 8
 #define MAIN_QUEUE 5
 
 
@@ -94,10 +94,10 @@ void main_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
-	printf("Gonna get read/write privileges.\n");
+	/*printf("Gonna get read/write privileges.\n");
 	if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
 	write_qid = OpenW();
-	if(write_qid) printf("Successfully got write privileges.\n");
+	if(write_qid) printf("Successfully got write privileges.\n");*/
 
 	/* Create User Task */
 	 for (i = 0; i < NUM_OF_TASK; i++) {

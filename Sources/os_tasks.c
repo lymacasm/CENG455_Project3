@@ -42,8 +42,8 @@ extern "C" {
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 /* Message queues */
-#define WRITE_QUEUE 14
-#define READ_QUEUE 15
+#define WRITE_QUEUE 6
+#define READ_QUEUE 7
 
 /* Data sizes */
 #define RX_BUF_SIZE (DATA_SIZE - 1)
@@ -342,7 +342,7 @@ void handler_task(os_task_param_t task_init_data)
 					if(_task_get_error() != MQX_OK)
 					{
 						printf("Failed to close the read message queue.\n");
-						printf("Error code: %d\n", _task_get_error());
+						printf("Error code: %x\n", _task_get_error());
 						_task_set_error(MQX_OK);
 					}
 

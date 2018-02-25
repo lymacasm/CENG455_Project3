@@ -39,7 +39,7 @@
 extern "C" {
 #endif 
 
-#define USER_QUEUE_BASE 6
+#define USER_QUEUE_BASE 8
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -76,7 +76,7 @@ void user_task(os_task_param_t task_init_data)
     char string[DATA_SIZE + 1];
 
 
-	printf("User%d: OpenR\n", task_init_data);
+	printf("User%d: OpenR with TID:%x\n", task_init_data, _task_get_id());
 	if (OpenR(user_qid)){
 		printf("User%d: Successfully got read privileges\n", task_init_data);
 	}
@@ -87,11 +87,17 @@ void user_task(os_task_param_t task_init_data)
 		printf("User%d: Successfully got write privileges\n", task_init_data);
 	}
 
-	if(_get_line(string) && write_qid != 0)
+	if(_get_line(string))
 	{
-		char write_string[DATA_SIZE + 1];
-		sprintf(write_string, "User%d: %s\n\r", task_init_data, string);
-		_putline(write_qid, write_string);
+		printf("User%d: %s\n", task_init_data, string);
+		if(write_qid != 0)
+		{
+			char write_string[DATA_SIZE + 1];
+			sprintf(write_string, "User%d: %s\n\r", task_init_data, string);
+			printf("I'm gonna write this with TID:%x : %s", _task_get_id(), write_string);
+			_putline(write_qid, write_string);
+		}
+
 	}
 	else
 	{
