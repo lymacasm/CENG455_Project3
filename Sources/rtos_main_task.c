@@ -40,7 +40,7 @@ extern "C" {
 #endif 
 
 #define MAIN_QUEUE 12
-
+#define NUM_OF_TASK 10
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 /* Initialization of Processor Expert components function prototype */
@@ -62,6 +62,7 @@ void main_task(os_task_param_t task_init_data)
 	/* Write your local variable definition here */
 	_queue_id main_qid;
 	_queue_id write_qid;
+	uint32_t  i;
 
 	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
@@ -81,6 +82,11 @@ void main_task(os_task_param_t task_init_data)
 	if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
 	write_qid = OpenW();
 	if(write_qid) printf("Successfully got write privileges.\n");
+
+	/* Create User Task */
+	 for (i = 0; i < NUM_OF_TASK; i++) {
+	 _task_create(0, USERTASK_TASK, i);
+	 }
 
 #ifdef PEX_USE_RTOS
 	while (1) {
