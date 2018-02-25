@@ -55,8 +55,8 @@ extern "C" {
 #define USER_QUEUE_SIZE 32
 
 /* Queue IDs */
-#define RX_QUEUE      8
-#define USER_QUEUE    9
+#define RX_QUEUE      1
+#define USER_QUEUE    2
 
 typedef enum request_cmd
 {

@@ -39,7 +39,7 @@
 extern "C" {
 #endif 
 
-#define MAIN_QUEUE 12
+#define MAIN_QUEUE 5
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 

@@ -32,11 +32,13 @@
 #include "rtos_main_task.h"
 #include "os_tasks.h"
 #include "user_task.h"
+#include "uart_handler.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+#define USER_QUEUE_BASE 6
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -52,7 +54,7 @@ extern "C" {
 void user_task(os_task_param_t task_init_data)
 {
   /* Write your local variable definition here */
-  
+
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
@@ -61,7 +63,6 @@ void user_task(os_task_param_t task_init_data)
     
     OSA_TimeDelay(10);                 /* Example code (for task release) */
    
-    
     
     
 #ifdef PEX_USE_RTOS   
