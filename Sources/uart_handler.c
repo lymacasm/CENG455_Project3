@@ -26,6 +26,8 @@ extern bool OpenR(uint16_t stream_no)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -36,6 +38,8 @@ extern bool OpenR(uint16_t stream_no)
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -54,6 +58,8 @@ extern bool OpenR(uint16_t stream_no)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to get the queue ID for the USER queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -62,6 +68,8 @@ extern bool OpenR(uint16_t stream_no)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from USER task to Handler.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -71,6 +79,8 @@ extern bool OpenR(uint16_t stream_no)
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
 		 printf("User Task failed to acquire Read Privileges!");
+		 _task_set_error(MQX_OK);
+		 _msgq_close(user_qid);
 		 return FALSE;
 	 }
 
@@ -81,6 +91,7 @@ extern bool OpenR(uint16_t stream_no)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
 		return FALSE;
 	}
 
@@ -103,6 +114,8 @@ extern _queue_id OpenW()
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return 0;
 	}
 
@@ -113,6 +126,7 @@ extern _queue_id OpenW()
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
+		_task_set_error(MQX_OK);
 		return 0;
 	}
 
@@ -131,6 +145,8 @@ extern _queue_id OpenW()
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to send message from USER task to Handler.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return 0;
 	}
 
@@ -140,6 +156,8 @@ extern _queue_id OpenW()
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
 		 printf("User Task failed to receive write reply!");
+		 _task_set_error(MQX_OK);
+		 _msgq_close(user_qid);
 		 return 0;
 	 }
 
@@ -153,6 +171,7 @@ extern _queue_id OpenW()
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
 		return 0;
 	}
 
@@ -172,6 +191,8 @@ extern bool _putline(_queue_id qid, const char* string)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -182,6 +203,8 @@ extern bool _putline(_queue_id qid, const char* string)
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -201,6 +224,8 @@ extern bool _putline(_queue_id qid, const char* string)
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to send message from USER task to Handler.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -210,6 +235,8 @@ extern bool _putline(_queue_id qid, const char* string)
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
 		 printf("User Task failed to receive write response!\n");
+		 _task_set_error(MQX_OK);
+		 _msgq_close(user_qid);
 		 return FALSE;
 	 }
 
@@ -220,6 +247,7 @@ extern bool _putline(_queue_id qid, const char* string)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
 		return FALSE;
 	}
 
@@ -246,6 +274,8 @@ extern bool _get_line(char* string)
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -256,6 +286,8 @@ extern bool _get_line(char* string)
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL)	{
 		printf("Could not allocate a message from the USER\n");
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -272,6 +304,8 @@ extern bool _get_line(char* string)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to get the queue ID for the USER queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -280,6 +314,8 @@ extern bool _get_line(char* string)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from USER task to Handler.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -291,6 +327,8 @@ extern bool _get_line(char* string)
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
 		 printf("User Task read request denied!");
+		 _task_set_error(MQX_OK);
+		 _msgq_close(user_qid);
 		 return FALSE;
 	 }
 
@@ -310,6 +348,7 @@ extern bool _get_line(char* string)
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
 		return FALSE;
 	}
 
@@ -326,6 +365,8 @@ extern bool Close()
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -336,6 +377,8 @@ extern bool Close()
 	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
 	if(msg_ptr == NULL){
 		printf("Could not allocate a message from the USER\n");
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -355,6 +398,8 @@ extern bool Close()
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from USER task to Handler.\n");
 		printf("Error code: %x\n", MQX_OK);
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -365,6 +410,8 @@ extern bool Close()
 	// Check Status
 	if (msg_ptr->STATUS == FAILURE){
 		printf("User Task failed to acquire Read Privileges!");
+		_task_set_error(MQX_OK);
+		_msgq_close(user_qid);
 		return FALSE;
 	}
 
@@ -375,6 +422,7 @@ extern bool Close()
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close User queue.\n");
 		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
 		return FALSE;
 	}
 
