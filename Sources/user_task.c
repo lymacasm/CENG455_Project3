@@ -53,13 +53,26 @@ extern "C" {
 */
 void user_task(os_task_param_t task_init_data)
 {
-  /* Write your local variable definition here */
+	_queue_id user_qid;
+	_queue_id write_qid;
+
+
+	user_qid = _msgq_open((_queue_number)(USER_QUEUE_BASE +
+	task_init_data), 0);
+
 
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
-    /* Write your code here ... */
     
+	if (OpenR(user_qid) == FALSE){
+		printf("User don't have Read Privileges");
+	}
+	write_qid = OpenW();
+	if (write_qid == 0){
+		printf("User don't have Write Privileges");
+	}
+
     
     OSA_TimeDelay(10);                 /* Example code (for task release) */
    
