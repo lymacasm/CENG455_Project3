@@ -246,8 +246,6 @@ extern bool _get_line(char* string)
 
 	// read first two bytes of data (i.e. queue id) sent from handler
 
-
-
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
 		 printf("User Task failed to acquire Read Privileges!");
@@ -271,5 +269,54 @@ extern bool _get_line(char* string)
 
 extern bool Close()
 {
-	return FALSE;
+	_queue_id user_qid;
+	USER_MESSAGE_PTR msg_ptr;
+
+	// Message queue initialization code
+	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to open USER sending message queue.\n");
+		printf("Error code: %x\n", MQX_OK);
+		return;
+	}
+
+	msg_ptr = (USER_MESSAGE_PTR)_msg_alloc(user_msg_pool);
+	if(msg_ptr == NULL){
+		printf("Could not allocate a message from the USER\n");
+		return;
+	}
+
+	// Setup the message
+	msg_ptr->HEADER.SOURCE_QID = user_qid;
+	msg_ptr->HEADER.TARGET_QID = _msgq_get_id(0, USER_QUEUE);
+	msg_ptr->HEADER.SIZE = sizeof(USER_MESSAGE);
+	msg_ptr->CMD_ID = CLOSE;
+	msg_ptr->TASK_ID = _task_get_id();
+
+
+	// Check if msgq_get_id worked
+	// NOTE: No MQX call can be inserted between _msgq_get_id and this check
+
+	// Send message
+	_msgq_send(msg_ptr);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from USER task to Handler.\n");
+		printf("Error code: %x\n", MQX_OK);
+		return;
+	}
+
+
+	// Wait for the return message:
+	msg_ptr = _msgq_receive(user_qid, 0);
+
+	// Check Status
+	if (msg_ptr->STATUS == FAILURE){
+		printf("User Task failed to acquire Read Privileges!");
+		return FALSE;
+	}
+
+	/* Free the message: */
+	_msg_free(msg_ptr);
+
+	return TRUE;
 }
