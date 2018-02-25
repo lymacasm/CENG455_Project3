@@ -24,7 +24,7 @@ extern bool OpenR(uint16_t stream_no)
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -48,7 +48,7 @@ extern bool OpenR(uint16_t stream_no)
 
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to get the queue ID for the USER queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -56,7 +56,7 @@ extern bool OpenR(uint16_t stream_no)
 	_msgq_send(msg_ptr);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from USER task to Handler.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -71,6 +71,13 @@ extern bool OpenR(uint16_t stream_no)
 
 	 /* Free the message: */
 	 _msg_free(msg_ptr);
+
+	_msgq_close(user_qid);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from USER task to Handler.\n");
+		printf("Error code: %x\n", _task_get_error());
+		return;
+	}
 
 	return TRUE;
 }
@@ -89,7 +96,7 @@ extern _queue_id OpenW()
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -113,7 +120,7 @@ extern _queue_id OpenW()
 	_msgq_send(msg_ptr);
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to send message from USER task to Handler.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -128,6 +135,12 @@ extern _queue_id OpenW()
 
 	 /* Free the message: */
 	 _msg_free(msg_ptr);
+	_msgq_close(user_qid);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from USER task to Handler.\n");
+		printf("Error code: %x\n", _task_get_error());
+		return;
+	}
 
 
 	return 0;
@@ -145,7 +158,7 @@ extern bool _putline(_queue_id qid, const char* string)
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -169,7 +182,7 @@ extern bool _putline(_queue_id qid, const char* string)
 	_msgq_send(msg_ptr);
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to send message from USER task to Handler.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -184,6 +197,13 @@ extern bool _putline(_queue_id qid, const char* string)
 
 	 /* Free the message: */
 	 _msg_free(msg_ptr);
+
+	_msgq_close(user_qid);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from USER task to Handler.\n");
+		printf("Error code: %x\n", _task_get_error());
+		return;
+	}
 
 
 	return 0;
@@ -207,7 +227,7 @@ extern bool _get_line(char* string)
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK)	{
 		printf("Failed to open USER sending message queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -229,7 +249,7 @@ extern bool _get_line(char* string)
 
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to get the queue ID for the USER queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -237,7 +257,7 @@ extern bool _get_line(char* string)
 	_msgq_send(msg_ptr);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from USER task to Handler.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -264,6 +284,13 @@ extern bool _get_line(char* string)
 	 /* Free the message: */
 	 _msg_free(msg_ptr);
 
+	_msgq_close(user_qid);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from USER task to Handler.\n");
+		printf("Error code: %x\n", _task_get_error());
+		return;
+	}
+
 	return TRUE;
 }
 
@@ -276,7 +303,7 @@ extern bool Close()
 	user_qid = _msgq_open((_queue_number)USER_QUEUE_SENDING, 0);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to open USER sending message queue.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		return;
 	}
 
@@ -317,6 +344,13 @@ extern bool Close()
 
 	/* Free the message: */
 	_msg_free(msg_ptr);
+
+	_msgq_close(user_qid);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from USER task to Handler.\n");
+		printf("Error code: %x\n", _task_get_error());
+		return;
+	}
 
 	return TRUE;
 }
