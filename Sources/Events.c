@@ -67,6 +67,7 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 		{
 			printf("Failed to open RX ISR sending message queue.\n");
 			printf("Error code: %x\n", MQX_OK);
+			_task_set_error(MQX_OK);
 			return;
 		}
 		message_pool_closed = 0; // Set to false for not closed
@@ -77,6 +78,7 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 	if(msg_ptr == NULL)
 	{
 		printf("Could not allocate a message from the RX ISR\n");
+		_task_set_error(MQX_OK);
 		return;
 	}
 
@@ -92,6 +94,7 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 	{
 		printf("Failed to get the queue ID for the RX queue.\n");
 		printf("Error code: %x\n", MQX_OK);
+		_task_set_error(MQX_OK);
 		return;
 	}
 
@@ -101,9 +104,9 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 	{
 		printf("Failed to send message from RX ISR to Handler.\n");
 		printf("Error code: %x\n", MQX_OK);
+		_task_set_error(MQX_OK);
 		return;
 	}
-	//UART_DRV_SendData(myUART_IDX, myRxBuff, sizeof(myRxBuff));
 }
 
 /* END Events */

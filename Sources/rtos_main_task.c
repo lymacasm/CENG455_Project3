@@ -97,10 +97,18 @@ void main_task(os_task_param_t task_init_data)
 		}
 		else if(strcmp("CLOSE", string) == 0)
 		{
+			printf("Closing connections.\n");
 			if(Close()) printf("Closed connections!\n");
 			else printf("Failed to close connections!\n");
+			printf("Sending a read request\n");
 			if(_get_line(string)) printf("I got a line even when I didn't have privileges...\n");
+			printf("Sending a write request\n");
 			if(_putline(write_qid, "Hola\r")) printf("I printed without write privileges...\n");
+			printf("OpenR\n");
+			if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
+			printf("OpenW\n");
+			write_qid = OpenW();
+			if(write_qid) printf("Successfully got write privileges.\n");
 		}
 
 		OSA_TimeDelay(10);    /* Example code (for task release) */

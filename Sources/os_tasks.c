@@ -176,7 +176,8 @@ void handler_task(os_task_param_t task_init_data)
 	{
 		printf("Failed to open RX ISR message queue.\n");
 		printf("Error code: %x\n", MQX_OK);
-		exit(1);
+		_task_set_error(MQX_OK);
+		_task_block();
 	}
 
 	/* Create RX ISR message pool */
@@ -185,7 +186,8 @@ void handler_task(os_task_param_t task_init_data)
 	{
 		printf("Failed to open RX ISR message pool.\n");
 		printf("Error code: %x\n", MQX_OK);
-		exit(1);
+		_task_set_error(MQX_OK);
+		_task_block();
 	}
 
 	/* Open User message queue */
@@ -194,7 +196,8 @@ void handler_task(os_task_param_t task_init_data)
 	{
 		printf("Failed to open User message queue.\n");
 		printf("Error code: %x\n", MQX_OK);
-		exit(1);
+		_task_set_error(MQX_OK);
+		_task_block();
 	}
 
 	/* Create User message pool */
@@ -203,7 +206,8 @@ void handler_task(os_task_param_t task_init_data)
 	{
 		printf("Failed to open User message pool.\n");
 		printf("Error code: %x\n", MQX_OK);
-		exit(1);
+		_task_set_error(MQX_OK);
+		_task_block();
 	}
 
 	user_pool_created = 1;
