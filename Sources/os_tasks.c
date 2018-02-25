@@ -260,7 +260,7 @@ void handler_task(os_task_param_t task_init_data)
 			if(_task_get_error() != MQX_OK)
 			{
 				printf("Failed to receive RX ISR message.\n");
-				printf("Error code: %x\n", MQX_OK);
+				printf("Error code: %x\n", _task_get_error());
 				_task_set_error(MQX_OK);
 			}
 
@@ -380,17 +380,20 @@ void handler_task(os_task_param_t task_init_data)
 						if(rx_buf[i] == ' ') last_space = i;
 					}
 
-					/* Move cursor to the last_space position */
-					tx_buf[0] = 0x1B; // ESCAPE SEQUENCE
-					tx_buf[1] = '[';
-					tx_buf[2] = ((i - last_space) & 0xFF);
-					tx_buf[3] = 'D';
+					for(i = 0; i < (rx_buf_idx - last_space); i++)
+					{
+						/* Move cursor to the last_space position */
+						tx_buf[ (i*4) + 0 ] = 0x1B; // ESCAPE SEQUENCE
+						tx_buf[ (i*4) + 1 ] = '[';
+						tx_buf[ (i*4) + 2 ] = 1;
+						tx_buf[ (i*4) + 3 ] = 'D';
+					}
 
 					/* Clear line from cursor right */
-					tx_buf[4] = 0x1B; // ESCAPE SEQUENCE
-					tx_buf[5] = '[';
-					tx_buf[6] = 'K';
-					tx_len = 7;
+					tx_buf[ (i*4) + 0 ] = 0x1B; // ESCAPE SEQUENCE
+					tx_buf[ (i*4) + 1 ] = '[';
+					tx_buf[ (i*4) + 2 ] = 'K';
+					tx_len = (i*4) + 3;
 
 					rx_buf_idx = last_space;
 				}

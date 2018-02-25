@@ -56,6 +56,7 @@ void user_task(os_task_param_t task_init_data)
 	_queue_id user_qid;
 	_queue_id write_qid;
 
+	printf("User task %d created\n", task_init_data);
 
 	user_qid = _msgq_open((_queue_number)(USER_QUEUE_BASE +
 	task_init_data), 0);
@@ -65,12 +66,13 @@ void user_task(os_task_param_t task_init_data)
   while (1) {
 #endif
     
-	if (OpenR(user_qid) == FALSE){
-		printf("User don't have Read Privileges");
+	if (OpenR(user_qid)){
+		printf("User%d: Successfully got read privileges", task_init_data);
 	}
 	write_qid = OpenW();
-	if (write_qid == 0){
-		printf("User don't have Write Privileges");
+	if (write_qid != 0)
+	{
+		printf("User%d: Successfully got write privileges", task_init_data);
 	}
 
     
