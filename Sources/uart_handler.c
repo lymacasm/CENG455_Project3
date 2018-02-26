@@ -32,9 +32,6 @@ extern bool OpenR(uint16_t stream_no)
 		_task_set_error(MQX_OK);
 		return FALSE;
 	}
-	else{
-		printf("I got the mutex!\n");
-	}
 
 
 	// Message queue initialization code
@@ -214,6 +211,7 @@ extern _queue_id OpenW()
 
 	// UNLOCK MUTEX
 	_mutex_unlock(&print_mutex);
+
 	return write_qid;
 }
 
@@ -388,7 +386,7 @@ extern bool _get_line(char* string)
 
 	 // Check Status
 	 if (msg_ptr->STATUS == FAILURE){
-		 printf("User Task read request denied!");
+		 //printf("User Task read request denied!");
 		 _task_set_error(MQX_OK);
 		 _msgq_close(user_qid);
 		 _mutex_unlock(&print_mutex);

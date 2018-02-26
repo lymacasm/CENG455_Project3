@@ -56,13 +56,19 @@ typedef struct rw_privileges
 	struct rw_privileges * NEXT;
 } RW_PRIVILEGES, * RW_PRIVILEGES_PTR;
 
+typedef struct rw_privilege_head
+{
+	uint32_t SIZE;
+	RW_PRIVILEGES_PTR HEAD;
+} RW_PRIVS_HEAD, *RW_PRIVS_HEAD_PTR;
+
 _pool_id rx_msg_pool;
 _pool_id user_msg_pool;
 volatile uint8_t user_pool_created = 0;
 
-static _queue_id find_privilege(RW_PRIVILEGES_PTR priv_head, _task_id tid)
+static _queue_id find_privilege(RW_PRIVS_HEAD_PTR priv_head, _task_id tid)
 {
-	RW_PRIVILEGES_PTR priv_searcher = priv_head;
+	RW_PRIVILEGES_PTR priv_searcher = priv_head->HEAD;
 	while(priv_searcher != NULL)
 	{
 		if(priv_searcher->TASK_ID == tid)
@@ -72,7 +78,7 @@ static _queue_id find_privilege(RW_PRIVILEGES_PTR priv_head, _task_id tid)
 	return 0;
 }
 
-static _status add_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid, _queue_id qid)
+static _status add_privilege(RW_PRIVS_HEAD_PTR privilege_head, _task_id tid, _queue_id qid)
 {
 	RW_PRIVILEGES_PTR new_privilege;
 	new_privilege = _mem_alloc(sizeof(RW_PRIVILEGES));
@@ -85,26 +91,26 @@ static _status add_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid, _
 	}
 	new_privilege->QUEUE_ID = qid;
 	new_privilege->TASK_ID = tid;
-	new_privilege->NEXT = *privilege_head;
-	*privilege_head = new_privilege;
+	new_privilege->NEXT = privilege_head->HEAD;
+	privilege_head->HEAD = new_privilege;
+	privilege_head->SIZE++;
 	return SUCCESS;
 }
 
-static _status remove_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid)
+static _status remove_privilege(RW_PRIVS_HEAD_PTR privilege_head, _task_id tid)
 {
-	RW_PRIVILEGES_PTR priv_searcher = *privilege_head;
+	RW_PRIVILEGES_PTR priv_searcher = privilege_head->HEAD;
 
 	/* Check for empty list */
-	if(*privilege_head == NULL)
+	if(privilege_head->SIZE == 0)
 	{
-		printf("Tried to remove privilege from empty list.\n");
 		return FAILURE;
 	}
 
 	/* Check if the privilege to remove is the first list item */
 	if(priv_searcher->TASK_ID == tid)
 	{
-		*privilege_head = priv_searcher->NEXT;
+		privilege_head->HEAD = priv_searcher->NEXT;
 		_mem_free(priv_searcher);
 		if(_task_get_error() != MQX_OK)
 		{
@@ -113,13 +119,14 @@ static _status remove_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid
 			_task_set_error(MQX_OK);
 			return FAILURE;
 		}
+		privilege_head->SIZE--;
 		return SUCCESS;
 	}
 
 	/* Search through the rest of the list */
 	while(priv_searcher->NEXT != NULL)
 	{
-		if(priv_searcher->TASK_ID == tid)
+		if(priv_searcher->NEXT->TASK_ID == tid)
 		{
 			RW_PRIVILEGES_PTR tmp = priv_searcher->NEXT;
 			priv_searcher->NEXT = priv_searcher->NEXT->NEXT;
@@ -131,6 +138,7 @@ static _status remove_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid
 				_task_set_error(MQX_OK);
 				return FAILURE;
 			}
+			privilege_head->SIZE--;
 			return SUCCESS;
 		}
 
@@ -151,8 +159,8 @@ static _status remove_privilege(RW_PRIVILEGES_PTR * privilege_head, _task_id tid
 void handler_task(os_task_param_t task_init_data)
 {
   /* Write your local variable definition here */
-	RW_PRIVILEGES_PTR read_privs_head = NULL;
-	RW_PRIVILEGES_PTR write_privs_head = NULL;
+	RW_PRIVS_HEAD read_privs_head;
+	RW_PRIVS_HEAD write_privs_head;
 	RX_MESSAGE_PTR rx_msg_ptr = NULL;
 	USER_MESSAGE_PTR user_msg_ptr = NULL;
 	USER_MESSAGE_PTR write_msg_ptr = NULL;
@@ -164,6 +172,14 @@ void handler_task(os_task_param_t task_init_data)
 	uint8_t rx_buf_idx = 0;
 	uint8_t tx_len = 0;
 	uint8_t write_msgq_open = 0;
+
+	/* Initialize read privilege list */
+	read_privs_head.SIZE = 0;
+	read_privs_head.HEAD = NULL;
+
+	/* Initialize write privilege list */
+	write_privs_head.SIZE = 0;
+	write_privs_head.HEAD = NULL;
 
 	printf("handlerTask Created!\n\r");
 
@@ -279,7 +295,7 @@ void handler_task(os_task_param_t task_init_data)
 				/* Check for newline character and send data to listeners */
 				else if(rx_msg_ptr->DATA == '\r' || rx_msg_ptr->DATA == '\n')
 				{
-					RW_PRIVILEGES_PTR priv_searcher = read_privs_head;
+					RW_PRIVILEGES_PTR priv_searcher = read_privs_head.HEAD;
 					_queue_id handler_qid;
 
 					/* Setup tx */
@@ -360,16 +376,9 @@ void handler_task(os_task_param_t task_init_data)
 					tx_buf[2] = '2';
 					tx_buf[3] = 'K';
 
-					/* Next line */
-					tx_buf[4] = 0x1B; // ESCAPE SEQUENCE
-					tx_buf[5] = 'E';
-
-					/* Back up to last line */
-					tx_buf[6] = 0x1B;
-					tx_buf[7] = '[';
-					tx_buf[8] = 0x1;
-					tx_buf[9] = 'A';
-					tx_len = 10;
+					/* Back to the beginning */
+					tx_buf[4] = '\r';
+					tx_len = 5;
 				}
 				/* Check for erase word command */
 				else if(rx_msg_ptr->DATA == 0x17)
@@ -447,7 +456,7 @@ void handler_task(os_task_param_t task_init_data)
 				case (READ_PRIV):
 					user_msg_ptr->CMD_ID = READ_PRIV_ACK;
 					/* Make sure we don't already have a privilege for this task */
-					if(find_privilege(read_privs_head, user_msg_ptr->TASK_ID) != 0)
+					if(find_privilege(&read_privs_head, user_msg_ptr->TASK_ID) != 0)
 					{
 						user_msg_ptr->STATUS = FAILURE;
 					}
@@ -463,7 +472,7 @@ void handler_task(os_task_param_t task_init_data)
 					break;
 				case (WRITE_PRIV):
 					user_msg_ptr->CMD_ID = WRITE_PRIV_ACK;
-					if(write_privs_head == NULL)
+					if(write_privs_head.SIZE == 0)
 					{
 						write_qid = _msgq_open((_queue_id)WRITE_QUEUE, 0);
 						if(_task_get_error() != MQX_OK)
@@ -510,7 +519,7 @@ void handler_task(os_task_param_t task_init_data)
 					break;
 				case (READ):
 					user_msg_ptr->CMD_ID = READ_ACK;
-					_queue_id destination = find_privilege(read_privs_head,
+					_queue_id destination = find_privilege(&read_privs_head,
 							user_msg_ptr->TASK_ID);
 					if(destination != 0)
 					{
@@ -557,7 +566,7 @@ void handler_task(os_task_param_t task_init_data)
 				write_msg_ptr->STATUS = FAILURE;
 
 				/* Check if task has write privilege */
-				if(find_privilege(write_privs_head, user_msg_ptr->TASK_ID) != 0)
+				if(find_privilege(&write_privs_head, write_msg_ptr->TASK_ID) != 0)
 				{
 					/* Wait for TX to finish */
 					uint8_t buf_cpy[TX_BUF_SIZE];
