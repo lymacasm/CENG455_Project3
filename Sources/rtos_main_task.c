@@ -40,7 +40,7 @@
 extern "C" {
 #endif 
 
-#define NUM_OF_TASK 8
+#define NUM_OF_TASK 15
 #define MAIN_QUEUE 5
 
 
@@ -50,6 +50,8 @@ extern "C" {
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
 extern void PEX_components_init(void);
 #endif 
+
+extern _queue_id write_qid;
 
 /*
 ** ===================================================================
@@ -64,7 +66,7 @@ void main_task(os_task_param_t task_init_data)
 {
 	/* Write your local variable definition here */
 	_queue_id 			main_qid;
-	_queue_id 			write_qid;
+	_queue_id			my_write_qid;
 	uint32_t  			i;
 	MUTEX_ATTR_STRUCT 	mutexattr;
 
@@ -94,11 +96,6 @@ void main_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
-	/*printf("Gonna get read/write privileges.\n");
-	if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
-	write_qid = OpenW();
-	if(write_qid) printf("Successfully got write privileges.\n");*/
-
 	/* Create User Task */
 	 for (i = 0; i < NUM_OF_TASK; i++) {
 	 _task_create(0, USERTASK_TASK, i);
@@ -107,32 +104,93 @@ void main_task(os_task_param_t task_init_data)
 #ifdef PEX_USE_RTOS
 	while (1) {
 #endif
-		/* Write your code here ... */
-		/*char string[DATA_SIZE + 1];
-		if(!_get_line(string))
-		{
-			printf("main task: failed to get line...\n");
-			_task_block();
+		char string[DATA_SIZE + 1];
+
+
+		/* Make sure I can open read privilege */
+		if (!OpenR(main_qid)){
+			printf("Master: Failed to get read privileges\n");
+			break;
 		}
-		if(strcmp("Hello", string) == 0)
+
+		/* Make sure I can't get read privilege again */
+		if(OpenR(main_qid))
 		{
-			_putline(write_qid, "Hi!\r");
+			printf("Master: Was able to acquire read privileges a second time.\n");
+			break;
 		}
-		else if(strcmp("CLOSE", string) == 0)
+
+		/* Try and get write privilege */
+		my_write_qid = OpenW();
+		if (my_write_qid != 0)
 		{
-			printf("Closing connections.\n");
-			if(Close()) printf("Closed connections!\n");
-			else printf("Failed to close connections!\n");
-			printf("Sending a read request\n");
-			if(_get_line(string)) printf("I got a line even when I didn't have privileges...\n");
-			printf("Sending a write request\n");
-			if(_putline(write_qid, "Hola\r")) printf("I printed without write privileges...\n");
-			printf("OpenR\n");
-			if(OpenR(main_qid)) printf("Successfully got read privileges.\n");
-			printf("OpenW\n");
-			write_qid = OpenW();
-			if(write_qid) printf("Successfully got write privileges.\n");
-		}*/
+			printf("Master: Successfully got write privileges\n");
+			write_qid = my_write_qid;
+
+			/* Make sure I can't get write privilege a second time */
+			if(OpenW() != 0)
+			{
+				printf("Master: Got write privilege a second time.\n");
+				break;
+			}
+		}
+
+		/* Try and get a line */
+		if(_get_line(string))
+		{
+			printf("Master: %s\n", string);
+			char write_string[DATA_SIZE + 16];
+			sprintf(write_string, "Master: %s\n\r", string);
+
+			/* Try and write a line */
+			if(my_write_qid != 0)
+			{
+				if(!_putline(my_write_qid, write_string))
+				{
+					printf("Master: Couldn't write when I should have been able to.\n");
+					break;
+				}
+			}
+
+			/* Try and write even if I don't have write privilege */
+			else
+			{
+				if(_putline(write_qid, write_string))
+				{
+					printf("Master: Wrote when I shouldn't have.\n");
+					break;
+				}
+			}
+
+		}
+		else
+		{
+			printf("Master: Failed to get line\n");
+			break;
+		}
+
+		/* Try and remove privileges */
+		if(!Close())
+		{
+			printf("Master: Failed to close privileges\n");
+			break;
+		}
+
+		/* Try to remove privileges again */
+		if(Close())
+		{
+			printf("Master: Was able to close privileges right after closing.\n");
+			break;
+		}
+
+		/* Try and read */
+		if(_get_line(string))
+		{
+			printf("Master: Could read when I shouldn't have.\n");
+			break;
+		}
+
+		my_write_qid = 0;
 
 		OSA_TimeDelay(10);    /* Example code (for task release) */
    
