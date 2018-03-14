@@ -8,7 +8,7 @@
 **     Repository  : KSDK 1.3.0
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-02-24, 19:13, # CodeGen: 4
+**     Date/Time   : 2018-03-13, 15:50, # CodeGen: 9
 **     Abstract    :
 **
 **     Settings    :
@@ -70,6 +70,7 @@
 #include "rtos_main_task.h"
 #include "os_tasks.h"
 #include "user_task.h"
+#include "scheduler.h"
 
 
 #ifdef __cplusplus
@@ -119,6 +120,9 @@ void Components_Init(void)
   UART_DRV_InstallRxCallback(myUART_IDX, myUART_RxCallback, myRxBuff, NULL, true);
   /*! myUART Auto initialization end */
     
+  /*! SchedulerTask Auto initialization start */ 
+  (void)SchedulerTask_Init();
+  /*! SchedulerTask Auto initialization end */                       
 }
 #endif /* CPU_COMPONENTS_INIT */
 

@@ -1,34 +1,34 @@
 /* ###################################################################
-**     Filename    : user_task.h
+**     Filename    : scheduler.h
 **     Project     : serial_handler
 **     Processor   : MK64FN1M0VLL12
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-02-24, 19:11, # CodeGen: 3
+**     Date/Time   : 2018-03-13, 15:50, # CodeGen: 9
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         user_task - void user_task(os_task_param_t task_init_data);
+**         scheduler_task - void scheduler_task(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
-** @file user_task.h
+** @file scheduler.h
 ** @version 01.00
 ** @brief
 **         This is user's event module.
 **         Put your event handler code here.
 */         
 /*!
-**  @addtogroup user_task_module user_task module documentation
+**  @addtogroup scheduler_module scheduler module documentation
 **  @{
 */         
 
-#ifndef __user_task_H
-#define __user_task_H
-/* MODULE user_task */
+#ifndef __scheduler_H
+#define __scheduler_H
+/* MODULE scheduler */
 
 #include "fsl_device_registers.h"
 #include "clockMan1.h"
@@ -44,30 +44,75 @@
 #include "UserTask.h"
 #include "SchedulerTask.h"
 
+#include "dd_task_interface.h"
+#include <message.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+#define SCHEDULER_QUEUE 8
+
+typedef struct sch_task_node
+{
+	QUEUE_ELEMENT_STRUCT 	HEADER;
+	_task_id				TID;
+	time_t					ABS_DEADLINE;
+	time_t					CREATION_TIME;
+	uint32_t				TASK_TYPE;
+	_mqx_uint 				TASK_PRIORITY;
+} SCH_TASK_NODE, SCH_TASK_NOTE_PTR;
+
+typedef enum scheduler_cmd
+{
+	CREATE = 0,
+	CREATE_ACK,
+	DELETE,
+	DELETE_ACK,
+	ACTIVE_LIST,
+	ACTIVE_LIST_ACK,
+	OVRDUE_LIST,
+	OVRDUE_LIST_ACK,
+	RESET,
+	RESET_ACK,
+	SCH_UNKNOWN_ACK
+} _scheduler_cmd;
+
+typedef struct scheduler_request_msg
+{
+	MESSAGE_HEADER_STRUCT   HEADER;
+	_scheduler_cmd			CMD_ID;
+	struct task_list*		TASK_INFO;
+} SCHEDULER_REQUEST_MSG, * SCHEDULER_REQUEST_MSG_PTR;
+
+typedef struct scheduler_response_msg
+{
+	MESSAGE_HEADER_STRUCT   HEADER;
+	_scheduler_cmd			ACK_ID;
+	_task_id				TID;
+	QUEUE_STRUCT_PTR		TASK_LIST;
+} SCHEDULER_RESPONSE_MSG, * SCHEDULER_RESPONSE_MSG_PTR;
+
 /*
 ** ===================================================================
-**     Callback    : user_task
+**     Callback    : scheduler_task
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void user_task(os_task_param_t task_init_data);
+void scheduler_task(os_task_param_t task_init_data);
 
 
-/* END user_task */
+/* END scheduler */
 
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif 
 
 #endif 
-/* ifndef __user_task_H*/
+/* ifndef __scheduler_H*/
 /*!
 ** @}
 */

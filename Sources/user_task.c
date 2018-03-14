@@ -32,6 +32,7 @@
 #include "rtos_main_task.h"
 #include "os_tasks.h"
 #include "user_task.h"
+#include "scheduler.h"
 #include "uart_handler.h"
 #include <stdio.h>
 
@@ -39,7 +40,7 @@
 extern "C" {
 #endif 
 
-#define USER_QUEUE_BASE 8
+#define USER_QUEUE_BASE 10
 
 _queue_id write_qid = 0;
 

@@ -42,6 +42,7 @@
 #include "handlerTask.h"
 #include "myUART.h"
 #include "UserTask.h"
+#include "SchedulerTask.h"
 
 #include <mqx.h>
 #include <message.h>

@@ -32,6 +32,7 @@
 #include "rtos_main_task.h"
 #include "os_tasks.h"
 #include "user_task.h"
+#include "scheduler.h"
 #include <stdio.h>
 
 #ifdef __cplusplus
