@@ -43,11 +43,79 @@ extern "C" {
 
 #include <stdio.h>
 
+/* Used for message memory pools */
 #define REQ_POOL_SIZE 8
 #define RSP_POOL_SIZE REQ_POOL_SIZE
 
+/* Defines the highest possible task priority */
+#define HIGHEST_PRIORITY 15
+
 _pool_id req_msg_pool;
 _pool_id rsp_msg_pool;
+
+/* Inserts the task into a sorted queue, in O(N) runtime */
+static void queue_insert_task(QUEUE_STRUCT_PTR list, SCH_TASK_NODE_PTR task)
+{
+	SCH_TASK_NODE_PTR list_prev_node;
+	SCH_TASK_NODE_PTR list_curr_node;
+	_mqx_uint list_size = 0;
+
+	/* If the list is empty, simply add task to list */
+	if(_queue_is_empty(list))
+	{
+		_queue_enqueue(list, (QUEUE_ELEMENT_STRUCT_PTR)task);
+		return;
+	}
+
+	/* Search list, starting from the beginning */
+	list_prev_node = (SCH_TASK_NODE_PTR)_queue_head(list);
+	list_curr_node = (SCH_TASK_NODE_PTR)_queue_next(list,
+			(QUEUE_ELEMENT_STRUCT_PTR)list_prev_node);
+	list_size = _queue_get_size(list) + 1;
+
+	/* Loop through the list */
+	while(--list_size)
+	{
+		/* Condition for placing task before current list item */
+		if(task->ABS_DEADLINE < list_curr_node->ABS_DEADLINE) break;
+
+		/* Increment list node pointers */
+		list_prev_node = list_curr_node;
+		list_curr_node = (SCH_TASK_NODE_PTR)_queue_next(list,
+				(QUEUE_ELEMENT_STRUCT_PTR)list_curr_node);
+	}
+
+	/* Insert task into list at previously determined location */
+	_queue_insert(list, (QUEUE_ELEMENT_STRUCT_PTR)list_prev_node,
+			(QUEUE_ELEMENT_STRUCT_PTR)task);
+}
+
+/* This function adjusts the priority of the tasks linearly in O(N) runtime */
+static void queue_prioritize_tasks(QUEUE_STRUCT_PTR list)
+{
+	SCH_TASK_NODE_PTR list_itr;
+	_mqx_uint list_size = 0;
+	_mqx_uint priority = HIGHEST_PRIORITY;
+
+	/* Get the beginning of the list, and the size */
+	list_itr = (SCH_TASK_NODE_PTR)_queue_head(list);
+	list_size = _queue_get_size(list);
+
+	/* Iterate through the list */
+	while(--list_size)
+	{
+		_mqx_uint old_priority; /* Unused variable needed for _task_set_priority */
+		_mqx_uint err = MQX_OK;
+
+		/* Adjust the priority of the task */
+		_task_set_priority(list_itr->TID, priority, &old_priority);
+		priority++;
+
+		/* Increment list iterator pointer */
+		list_itr = (SCH_TASK_NODE_PTR)_queue_next(list,
+				(QUEUE_ELEMENT_STRUCT_PTR)list_itr);
+	}
+}
 
 /*
 ** ===================================================================
@@ -91,7 +159,7 @@ void scheduler_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
-	/* Create request message pool */
+	/* Create response message pool */
 	rsp_msg_pool = _msgpool_create(sizeof(SCHEDULER_RESPONSE_MSG), RSP_POOL_SIZE, 0, 0);
 	if(_task_get_error() != MQX_OK)
 	{
@@ -104,7 +172,6 @@ void scheduler_task(os_task_param_t task_init_data)
 #ifdef PEX_USE_RTOS
 	while (1) {
 #endif
-		/* Write your code here ... */
 		time_t timeout = 0;
 		if(!_queue_is_empty(&active_list))
 		{

@@ -53,6 +53,7 @@ extern "C" {
 
 #define SCHEDULER_QUEUE 8
 
+/* Node used to store tasks in list */
 typedef struct sch_task_node
 {
 	QUEUE_ELEMENT_STRUCT 	HEADER;
@@ -61,8 +62,9 @@ typedef struct sch_task_node
 	time_t					CREATION_TIME;
 	uint32_t				TASK_TYPE;
 	_mqx_uint 				TASK_PRIORITY;
-} SCH_TASK_NODE, SCH_TASK_NOTE_PTR;
+} SCH_TASK_NODE, * SCH_TASK_NODE_PTR;
 
+/* Enumeration of different command ID's */
 typedef enum scheduler_cmd
 {
 	CREATE = 0,
@@ -78,6 +80,7 @@ typedef enum scheduler_cmd
 	SCH_UNKNOWN_ACK
 } _scheduler_cmd;
 
+/* The request message struct that is received by scheduler */
 typedef struct scheduler_request_msg
 {
 	MESSAGE_HEADER_STRUCT   HEADER;
@@ -85,6 +88,7 @@ typedef struct scheduler_request_msg
 	struct task_list*		TASK_INFO;
 } SCHEDULER_REQUEST_MSG, * SCHEDULER_REQUEST_MSG_PTR;
 
+/* The response message struct that is sent by scheduler */
 typedef struct scheduler_response_msg
 {
 	MESSAGE_HEADER_STRUCT   HEADER;
@@ -104,6 +108,7 @@ typedef struct scheduler_response_msg
 */
 void scheduler_task(os_task_param_t task_init_data);
 
+extern _pool_id req_msg_pool;
 
 /* END scheduler */
 
