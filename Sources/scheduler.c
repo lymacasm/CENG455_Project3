@@ -96,7 +96,6 @@ static void queue_insert_task(QUEUE_STRUCT_PTR list, SCH_TASK_NODE_PTR task)
 static void queue_prioritize_tasks(QUEUE_STRUCT_PTR list)
 {
 	SCH_TASK_NODE_PTR list_itr;
-	_mqx_uint list_size = 0;
 	_mqx_uint priority = HIGHEST_PRIORITY;
 
 	/* Get the beginning of the list, and the size */
@@ -127,6 +126,61 @@ static void queue_prioritize_tasks(QUEUE_STRUCT_PTR list)
 		list_itr = (SCH_TASK_NODE_PTR)_queue_next(list,
 				(QUEUE_ELEMENT_STRUCT_PTR)list_itr);
 	}
+}
+
+/* Searches queue for element to remove.
+ * Returns True if element if found and removed.
+ * Returns False if the element if neither found nor removed.
+ */
+static uint8_t queue_find_and_remove(QUEUE_STRUCT_PTR list, _task_id tid)
+{
+	SCH_TASK_NODE_PTR list_itr;
+
+	/* Start at head of list */
+	list_itr = (SCH_TASK_NODE_PTR)_queue_head(list);
+
+	while(list_itr != NULL)
+	{
+		/* Check for task id */
+		if(list_itr->TID == tid)
+		{
+			/* Remove item from the queue */
+			_queue_unlink(list, (QUEUE_ELEMENT_STRUCT_PTR)list_itr);
+
+			/* Return TRUE for a successful operation */
+			return TRUE;
+		}
+
+		/* Increment list iterator pointer */
+		list_itr = (SCH_TASK_NODE_PTR)_queue_next(list,
+				(QUEUE_ELEMENT_STRUCT_PTR)list_itr);
+	}
+
+	return FALSE;
+}
+
+static uint8_t queue_find(QUEUE_STRUCT_PTR list, _task_id tid)
+{
+	SCH_TASK_NODE_PTR list_itr;
+
+	/* Start at head of list */
+	list_itr = (SCH_TASK_NODE_PTR)_queue_head(list);
+
+	while(list_itr != NULL)
+	{
+		/* Check for task id */
+		if(list_itr->TID == tid)
+		{
+			/* Return TRUE for a successful operation */
+			return TRUE;
+		}
+
+		/* Increment list iterator pointer */
+		list_itr = (SCH_TASK_NODE_PTR)_queue_next(list,
+				(QUEUE_ELEMENT_STRUCT_PTR)list_itr);
+	}
+
+	return FALSE;
 }
 
 /*
@@ -230,9 +284,10 @@ void scheduler_task(os_task_param_t task_init_data)
 			case(CREATE):
 				response_msg->ACK_ID = CREATE_ACK;
 				SCH_TASK_NODE_PTR new_task;
+				_task_id new_task_tid;
 
 				/* Create a task. It won't start until the scheduler sleeps */
-				_task_create(0, request_msg->TASK_INFO->task_type, 0);
+				new_task_tid = _task_create(0, request_msg->TASK_INFO->task_type, 0);
 
 				/* Allocate memory for new task */
 				new_task = (SCH_TASK_NODE_PTR)_partition_alloc(task_list_pid);
@@ -242,18 +297,30 @@ void scheduler_task(os_task_param_t task_init_data)
 				new_task->TASK_TYPE = request_msg->TASK_INFO->task_type;
 				new_task->ABS_DEADLINE = new_task->CREATION_TIME +
 						request_msg->TASK_INFO->deadline;
-				new_task->TID = request_msg->TASK_INFO->tid;
+				new_task->TID = new_task_tid;
 
 				/* Add the task into the list */
 				queue_insert_task(&active_list, new_task);
 
 				/* Adjust the task priorities */
 				queue_prioritize_tasks(&active_list);
+
+				/* Populate task id */
+				response_msg->TID = new_task_tid;
 				break;
 
 			/* Delete a task */
 			case(DELETE):
 				response_msg->ACK_ID = DELETE_ACK;
+				if(queue_find_and_remove(&active_list, request_msg->TASK_INFO->tid))
+				{
+					_task_destroy(request_msg->TASK_INFO->tid);
+					/* Tell the requester everything was good */
+				}
+				else if(queue_find(&overdue_list, request_msg->TASK_INFO->tid))
+				{
+					/* Tell the requester it was late! */
+				}
 				break;
 			case(ACTIVE_LIST):
 				response_msg->ACK_ID = ACTIVE_LIST_ACK;
