@@ -42,6 +42,7 @@ extern "C" {
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 #include <stdio.h>
+#include <partition.h>
 
 /* Used for message memory pools */
 #define REQ_POOL_SIZE 8
@@ -49,6 +50,10 @@ extern "C" {
 
 /* Defines the highest possible task priority */
 #define HIGHEST_PRIORITY 15
+
+/* Partition definitions */
+#define TASK_LIST_INITIAL_SIZE (8)
+#define TASK_LIST_GROW_SIZE (4)
 
 _pool_id req_msg_pool;
 _pool_id rsp_msg_pool;
@@ -58,7 +63,6 @@ static void queue_insert_task(QUEUE_STRUCT_PTR list, SCH_TASK_NODE_PTR task)
 {
 	SCH_TASK_NODE_PTR list_prev_node;
 	SCH_TASK_NODE_PTR list_curr_node;
-	_mqx_uint list_size = 0;
 
 	/* If the list is empty, simply add task to list */
 	if(_queue_is_empty(list))
@@ -68,13 +72,11 @@ static void queue_insert_task(QUEUE_STRUCT_PTR list, SCH_TASK_NODE_PTR task)
 	}
 
 	/* Search list, starting from the beginning */
-	list_prev_node = (SCH_TASK_NODE_PTR)_queue_head(list);
-	list_curr_node = (SCH_TASK_NODE_PTR)_queue_next(list,
-			(QUEUE_ELEMENT_STRUCT_PTR)list_prev_node);
-	list_size = _queue_get_size(list) + 1;
+	list_prev_node = NULL;
+	list_curr_node = (SCH_TASK_NODE_PTR)_queue_head(list);
 
 	/* Loop through the list */
-	while(--list_size)
+	while(list_curr_node != NULL)
 	{
 		/* Condition for placing task before current list item */
 		if(task->ABS_DEADLINE < list_curr_node->ABS_DEADLINE) break;
@@ -99,16 +101,26 @@ static void queue_prioritize_tasks(QUEUE_STRUCT_PTR list)
 
 	/* Get the beginning of the list, and the size */
 	list_itr = (SCH_TASK_NODE_PTR)_queue_head(list);
-	list_size = _queue_get_size(list);
 
 	/* Iterate through the list */
-	while(--list_size)
+	while(list_itr != NULL)
 	{
 		_mqx_uint old_priority; /* Unused variable needed for _task_set_priority */
 		_mqx_uint err = MQX_OK;
 
 		/* Adjust the priority of the task */
-		_task_set_priority(list_itr->TID, priority, &old_priority);
+		err = _task_set_priority(list_itr->TID, priority, &old_priority);
+		if(err != MQX_OK)
+		{
+			printf("Failed to set task priority.\n");
+			printf("TID: %lu, Priority: %lu\n", list_itr->TID, priority);
+			return;
+		}
+
+		/* Update priority member */
+		list_itr->TASK_PRIORITY = priority;
+
+		/* Lower the priority for the next task in the list */
 		priority++;
 
 		/* Increment list iterator pointer */
@@ -134,6 +146,8 @@ void scheduler_task(os_task_param_t task_init_data)
 	SCHEDULER_REQUEST_MSG_PTR request_msg;
 	SCHEDULER_RESPONSE_MSG_PTR response_msg;
 	_queue_id msg_qid;
+	_mqx_uint min_task_priority;
+	_partition_id task_list_pid;
 
 	/* Initialize queues */
 	_queue_init(&active_list, 0);
@@ -154,7 +168,7 @@ void scheduler_task(os_task_param_t task_init_data)
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to open request message pool.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
@@ -164,18 +178,36 @@ void scheduler_task(os_task_param_t task_init_data)
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to open response message pool.\n");
-		printf("Error code: %x\n", MQX_OK);
+		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
+
+	/* Create partition for task queue elements */
+	task_list_pid = _partition_create(sizeof(SCH_TASK_NODE), TASK_LIST_INITIAL_SIZE,
+			TASK_LIST_GROW_SIZE, 0);
+	if(_task_get_error() != MQX_OK)
+	{
+		printf("Failed to create partition.\n");
+		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		_task_block();
+	}
+
+	/* Get absolute lowest task priority */
+	min_task_priority = _sched_get_min_priority(0);
 
 #ifdef PEX_USE_RTOS
 	while (1) {
 #endif
 		time_t timeout = 0;
+		time_t abs_deadline = 0;
 		if(!_queue_is_empty(&active_list))
 		{
+			SCH_TASK_NODE_PTR active_list_itr;
+
 			/* Get the soonest deadline */
+			//active_list_itr = (SCH_TASK_NODE_PTR)_queue_head
 		}
 
 		/* Block until the next deadline or until a message is received */
@@ -194,9 +226,32 @@ void scheduler_task(os_task_param_t task_init_data)
 			/* Check what command was received */
 			switch(request_msg->CMD_ID)
 			{
+			/* Schedule a new task */
 			case(CREATE):
 				response_msg->ACK_ID = CREATE_ACK;
+				SCH_TASK_NODE_PTR new_task;
+
+				/* Create a task. It won't start until the scheduler sleeps */
+				_task_create(0, request_msg->TASK_INFO->task_type, 0);
+
+				/* Allocate memory for new task */
+				new_task = (SCH_TASK_NODE_PTR)_partition_alloc(task_list_pid);
+
+				/* Initialize members of new_task */
+				new_task->CREATION_TIME = request_msg->TASK_INFO->creation_time;
+				new_task->TASK_TYPE = request_msg->TASK_INFO->task_type;
+				new_task->ABS_DEADLINE = new_task->CREATION_TIME +
+						request_msg->TASK_INFO->deadline;
+				new_task->TID = request_msg->TASK_INFO->tid;
+
+				/* Add the task into the list */
+				queue_insert_task(&active_list, new_task);
+
+				/* Adjust the task priorities */
+				queue_prioritize_tasks(&active_list);
 				break;
+
+			/* Delete a task */
 			case(DELETE):
 				response_msg->ACK_ID = DELETE_ACK;
 				break;
