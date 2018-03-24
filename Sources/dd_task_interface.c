@@ -151,19 +151,19 @@ _task_id dd_delete(_task_id task_id){
 	taskID = msg_res_ptr->TID;
 
 	// Check Status
-	if (msg_res_ptr->STATUS == FAILURE && msg_res_ptr->TID == 0){
+	if (msg_res_ptr->STATUS == FAILED){
 		printf("Task not created. \n");			// modify print statement later
 		_task_set_error(MQX_OK);
 		_msgq_close(msg_qid);
 		return 0;
 	}
-	else if (msg_res_ptr->STATUS == FAILURE && msg_res_ptr->TID != 0){
-		printf("Cannot delete task. \n");		// modify print statement later
+	else if (msg_res_ptr->STATUS == OVERDUE){
+		printf("Task Overdue, cannot delete task. \n");		// modify print statement later
 		_task_set_error(MQX_OK);
 		_msgq_close(msg_qid);
 		return 0;
 	}
-	else if (msg_res_ptr->STATUS == SUCCESS){
+	else if (msg_res_ptr->STATUS == SUCCESSFUL){
 		_task_destroy(msg_res_ptr->TID);
 	}
 
@@ -192,8 +192,7 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	_queue_id msg_qid;
 	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
 	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
-	_task_id taskID;
-
+	QUEUE_STRUCT_PTR		LIST_PTR;
 
 	// Message queue initialization code
 	msg_qid = _msgq_open(DD_INTERFACE_QUEUE, 0);
@@ -215,8 +214,7 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	// Setup the message
 	msg_req_ptr->HEADER->SOURCE_QID = msg_qid;
 	msg_req_ptr->HEADER->TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
-	msg_req_ptr->CMD_ID = DELETE;
-	msg_req_ptr->TASK_INFO->tid = task_id;
+	msg_req_ptr->CMD_ID = ACTIVE_LIST;
 
 	// Send message
 	_msgq_send(msg_req_ptr);
@@ -229,6 +227,12 @@ uint32_t dd_return_active_list(struct task_list ** list){
 
 	 // Wait for the return message:
 	msg_res_ptr = _msgq_receive(msg_qid, 0);
+	// copy pointer to active list
+	LIST_PTR = msg_res_ptr->TASK_LIST;
+
+	while (LIST_PTR !=0){
+
+	}
 
 }
 
