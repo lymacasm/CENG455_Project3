@@ -64,6 +64,7 @@ _task_id dd_tcreate(uint32_t template_index, , uint32_t task_param, time_t deadl
 	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
 	msg_req_ptr->CMD_ID = CREATE;
 	msg_req_ptr->TASK_INFO = &new_task;
+	msg_req_ptr->PARAMETER = task_param;
 
 	// Send message
 	_msgq_send(msg_req_ptr);
