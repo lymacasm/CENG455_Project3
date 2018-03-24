@@ -12,7 +12,7 @@
 #define DD_INTERFACE_QUEUE 9
 
 
-_task_id dd_tcreate(uint32_t template_index, time_t deadline){
+_task_id dd_tcreate(uint32_t template_index, , uint32_t task_param, time_t deadline){
 	/*
 	 This primitive, creates a deadline driven scheduled task. It follows the steps outlined below
 		1. Opens a queue

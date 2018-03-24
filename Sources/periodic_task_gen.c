@@ -1,74 +1,82 @@
 /* ###################################################################
-**     Filename    : user_task.h
+**     Filename    : periodic_task_gen.c
 **     Project     : serial_handler
 **     Processor   : MK64FN1M0VLL12
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-02-24, 19:11, # CodeGen: 3
+**     Date/Time   : 2018-03-24, 15:28, # CodeGen: 10
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         user_task - void user_task(os_task_param_t task_init_data);
+**         periodic_task_gen - void periodic_task_gen(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
-** @file user_task.h
+** @file periodic_task_gen.c
 ** @version 01.00
 ** @brief
 **         This is user's event module.
 **         Put your event handler code here.
 */         
 /*!
-**  @addtogroup user_task_module user_task module documentation
+**  @addtogroup periodic_task_gen_module periodic_task_gen module documentation
 **  @{
 */         
+/* MODULE periodic_task_gen */
 
-#ifndef __user_task_H
-#define __user_task_H
-/* MODULE user_task */
-
-#include "fsl_device_registers.h"
-#include "clockMan1.h"
-#include "pin_init.h"
-#include "osa1.h"
-#include "mqx_ksdk.h"
-#include "uart1.h"
-#include "fsl_mpu1.h"
-#include "fsl_hwtimer1.h"
-#include "MainTask.h"
-#include "handlerTask.h"
-#include "myUART.h"
-#include "UserTask.h"
-#include "SchedulerTask.h"
-#include "PeriodicTaskGen.h"
+#include "Cpu.h"
+#include "Events.h"
+#include "rtos_main_task.h"
+#include "os_tasks.h"
+#include "user_task.h"
+#include "scheduler.h"
+#include "periodic_task_gen.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
+
+/* User includes (#include below this line is not maintained by Processor Expert) */
+
 /*
 ** ===================================================================
-**     Callback    : user_task
+**     Callback    : periodic_task_gen
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void user_task(os_task_param_t task_init_data);
+void periodic_task_gen(os_task_param_t task_init_data)
+{
+  /* Write your local variable definition here */
+  
+#ifdef PEX_USE_RTOS
+  while (1) {
+#endif
+    /* Write your code here ... */
+    
+    
+    OSA_TimeDelay(10);                 /* Example code (for task release) */
+   
+    
+    
+    
+#ifdef PEX_USE_RTOS   
+  }
+#endif    
+}
 
-
-/* END user_task */
+/* END periodic_task_gen */
 
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif 
 
-#endif 
-/* ifndef __user_task_H*/
 /*!
 ** @}
 */
