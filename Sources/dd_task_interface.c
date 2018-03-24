@@ -12,7 +12,7 @@
 #define DD_INTERFACE_QUEUE 9
 
 
-_task_id dd_tcreate(uint32_t template_index, , uint32_t task_param, time_t deadline){
+_task_id dd_tcreate(uint32_t template_index, uint32_t task_param, time_t deadline){
 	/*
 	 This primitive, creates a deadline driven scheduled task. It follows the steps outlined below
 		1. Opens a queue
@@ -64,6 +64,7 @@ _task_id dd_tcreate(uint32_t template_index, , uint32_t task_param, time_t deadl
 	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
 	msg_req_ptr->CMD_ID = CREATE;
 	msg_req_ptr->TASK_INFO = &new_task;
+	msg_req_ptr->PARAMETER = task_param;
 
 	// Send message
 	_msgq_send(msg_req_ptr);
@@ -193,6 +194,8 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
 	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
 	QUEUE_STRUCT_PTR		LIST_PTR;
+	SCH_TASK_NODE_PTR 		iterator;
+
 
 	// Message queue initialization code
 	msg_qid = _msgq_open(DD_INTERFACE_QUEUE, 0);
@@ -230,7 +233,17 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	// copy pointer to active list
 	LIST_PTR = msg_res_ptr->TASK_LIST;
 
-	while (LIST_PTR !=0){
+	iterator = (SCH_TASK_NODE_PTR)_queue_head(LIST_PTR);
+
+	while (iterator !=0){
+	list->tid	= node->TID;
+	list->creation_time = node->CREATION_TIME;
+	list->deadline = node->ABS_DEADLINE;
+	list->task_type = node->TASK_TYPE;
+	list->next_cell = 0;				//NEEDS TO BE FIXED
+	list->previous_cell = 0;			//NEEDS TO BE FIXED
+
+	if(list->next_cell == NULL){
 
 	}
 
