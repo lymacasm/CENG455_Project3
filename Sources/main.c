@@ -48,6 +48,7 @@
 #include "UserTask.h"
 #include "SchedulerTask.h"
 #include "PeriodicTaskGen.h"
+#include "PeriodicTask.h"
 #if CPU_INIT_CONFIG
   #include "Init_Config.h"
 #endif

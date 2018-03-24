@@ -44,10 +44,20 @@
 #include "UserTask.h"
 #include "SchedulerTask.h"
 #include "PeriodicTaskGen.h"
+#include "PeriodicTask.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
+
+typedef struct periodic_task
+{
+	time_t period;
+	time_t exec_time;
+	time_t deadline;
+	time_t phase;
+	time_t executions;
+} PERIODIC_TASK, PERIODIC_TASK_PTR;
 
 /*
 ** ===================================================================
@@ -60,6 +70,17 @@ extern "C" {
 */
 void periodic_task_gen(os_task_param_t task_init_data);
 
+
+/*
+** ===================================================================
+**     Callback    : periodic_task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void periodic_task(os_task_param_t task_init_data);
 
 /* END periodic_task_gen */
 

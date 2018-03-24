@@ -114,6 +114,7 @@
     <GeneratedCs>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\Cpu.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\MainTask.c</PathName>
+      <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PeriodicTask.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PeriodicTaskGen.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\SchedulerTask.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\UserTask.c</PathName>
@@ -270,6 +271,7 @@
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\Cpu.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\MainTask.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PE_low_level_init.h</PathName>
+      <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PeriodicTask.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PeriodicTaskGen.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\SDK\platform\devices\MK64F12\startup\system_MK64F12.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\SDK\rtos\mqx\config\board\user_config.h</PathName>

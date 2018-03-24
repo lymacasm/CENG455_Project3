@@ -39,6 +39,18 @@
 extern "C" {
 #endif 
 
+#define TASK_LIST_SIZE 5
+
+PERIODIC_TASK task_list[TASK_LIST_SIZE] = {
+		/*
+	   Period, Ex.Time, Deadline, Phase, Execution Cycles
+		 */
+		{1000, 200,		600,	  0, 		0},
+		{500,  100,		350, 	  0, 		0},
+		{100,  20,		70, 	  0, 		0},
+		{5000, 100, 	150, 	  0, 		0},
+		{3000, 1000, 	3000, 	  0, 		0}
+};
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -53,22 +65,61 @@ extern "C" {
 */
 void periodic_task_gen(os_task_param_t task_init_data)
 {
-  /* Write your local variable definition here */
+	/* Write your local variable definition here */
+	MQX_TICK_STRUCT current_time;
   
 #ifdef PEX_USE_RTOS
-  while (1) {
+	while (1) {
 #endif
-    /* Write your code here ... */
-    
-    
-    OSA_TimeDelay(10);                 /* Example code (for task release) */
+		_time_get_ticks(&current_time);
+
+		/* Find the next task that needs to be created */
+		uint32_t i;
+		uint32_t min_task_idx = 0;
+		time_t min_task_time = 0xFFFFFFFF;
+		/* Find the min wait time to the next periodic task creation */
+		for(i = 0; i < TASK_LIST_SIZE; i++)
+		{
+			/* Calculate the wait time for current periodic task */
+			time_t time_to_wait = (current_time.TICKS[0] % task_list[i].period)
+					+ task_list[i].phase;
+
+			/* Update min wait time information */
+			if( time_to_wait < min_task_time )
+			{
+				min_task_time = time_to_wait;
+				min_task_idx = i;
+			}
+		}
    
+		/* Delay for min wait time */
+		_time_delay_ticks(min_task_time);
     
-    
-    
+		/* Create the periodic task */
+		dd_tcreate(PERIODICTASK_TASK, min_task_idx, task_list[min_task_idx].deadline);
+
+		/* Create monitor task */
 #ifdef PEX_USE_RTOS   
   }
 #endif    
+}
+
+/*
+** ===================================================================
+**     Callback    : periodic_task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void periodic_task(os_task_param_t task_init_data)
+{
+	/* Delay for execution time */
+	_time_delay_ticks(task_list[task_init_data].exec_time);
+
+	/* Delete and deschedule myself */
+	dd_delete(_task_get_id());
 }
 
 /* END periodic_task_gen */

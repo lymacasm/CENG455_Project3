@@ -44,6 +44,7 @@
 #include "UserTask.h"
 #include "SchedulerTask.h"
 #include "PeriodicTaskGen.h"
+#include "PeriodicTask.h"
 
 #include <mqx.h>
 #include <message.h>

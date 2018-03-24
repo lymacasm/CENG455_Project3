@@ -322,7 +322,8 @@ void scheduler_task(os_task_param_t task_init_data)
 				_task_id new_task_tid;
 
 				/* Create a task. It won't start until the scheduler sleeps */
-				new_task_tid = _task_create(0, request_msg->TASK_INFO->task_type, 0);
+				new_task_tid = _task_create(0, request_msg->TASK_INFO->task_type,
+						request_msg->PARAMETER);
 
 				/* Allocate memory for new task */
 				new_task = (SCH_TASK_NODE_PTR)_partition_alloc(task_list_pid);
