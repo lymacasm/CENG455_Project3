@@ -81,11 +81,12 @@ typedef enum scheduler_cmd
 	SCH_UNKNOWN_ACK
 } _scheduler_cmd;
 
-typedef enum status
+typedef enum status_sch
 {
-	FAILURE = 0,
-	SUCCESS
-} _status;
+	FAILED = 0,
+	SUCCESSFUL,
+	OVERDUE
+} _status_sch;
 
 /* The request message struct that is received by scheduler */
 typedef struct scheduler_request_msg
@@ -102,7 +103,7 @@ typedef struct scheduler_response_msg
 	_scheduler_cmd			ACK_ID;
 	_task_id				TID;
 	QUEUE_STRUCT_PTR		TASK_LIST;
-	_status					STATUS;
+	_status_sch				STATUS;
 } SCHEDULER_RESPONSE_MSG, * SCHEDULER_RESPONSE_MSG_PTR;
 
 /*
