@@ -45,6 +45,7 @@
 #include "SchedulerTask.h"
 #include "PeriodicTaskGen.h"
 #include "PeriodicTask.h"
+#include "MonitorTask.h"
 
 #include <mqx.h>
 #include <message.h>

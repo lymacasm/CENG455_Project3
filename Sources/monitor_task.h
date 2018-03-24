@@ -1,34 +1,34 @@
 /* ###################################################################
-**     Filename    : rtos_main_task.h
+**     Filename    : monitor_task.h
 **     Project     : serial_handler
 **     Processor   : MK64FN1M0VLL12
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-02-06, 17:17, # CodeGen: 1
+**     Date/Time   : 2018-03-24, 16:50, # CodeGen: 12
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         main_task - void main_task(os_task_param_t task_init_data);
+**         monitor_task - void monitor_task(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
-** @file rtos_main_task.h
+** @file monitor_task.h
 ** @version 01.00
 ** @brief
 **         This is user's event module.
 **         Put your event handler code here.
 */         
 /*!
-**  @addtogroup rtos_main_task_module rtos_main_task module documentation
+**  @addtogroup monitor_task_module monitor_task module documentation
 **  @{
 */         
 
-#ifndef __rtos_main_task_H
-#define __rtos_main_task_H
-/* MODULE rtos_main_task */
+#ifndef __monitor_task_H
+#define __monitor_task_H
+/* MODULE monitor_task */
 
 #include "fsl_device_registers.h"
 #include "clockMan1.h"
@@ -53,24 +53,24 @@ extern "C" {
 
 /*
 ** ===================================================================
-**     Callback    : main_task
+**     Callback    : monitor_task
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void main_task(os_task_param_t task_init_data);
+void monitor_task(os_task_param_t task_init_data);
 
 
-/* END rtos_main_task */
+/* END monitor_task */
 
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif 
 
 #endif 
-/* ifndef __rtos_main_task_H*/
+/* ifndef __monitor_task_H*/
 /*!
 ** @}
 */

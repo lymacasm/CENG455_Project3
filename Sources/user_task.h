@@ -45,6 +45,7 @@
 #include "SchedulerTask.h"
 #include "PeriodicTaskGen.h"
 #include "PeriodicTask.h"
+#include "MonitorTask.h"
 
 #ifdef __cplusplus
 extern "C" {

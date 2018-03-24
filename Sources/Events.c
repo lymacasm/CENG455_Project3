@@ -34,6 +34,7 @@
 #include "user_task.h"
 #include "scheduler.h"
 #include "periodic_task_gen.h"
+#include "monitor_task.h"
 #include <stdio.h>
 
 #ifdef __cplusplus
