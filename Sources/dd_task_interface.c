@@ -189,6 +189,46 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	pointer pointing to the start of the list could suffice. Analyze the alternatives and justify your implementation
 	choice.
 	 */
+	_queue_id msg_qid;
+	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
+	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
+	_task_id taskID;
+
+
+	// Message queue initialization code
+	msg_qid = _msgq_open(DD_INTERFACE_QUEUE, 0);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to open Schedule message queue.\n");
+		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
+	if(msg_req_ptr == NULL){
+		printf("Could not allocate a message from the Scheduler\n");
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+
+	// Setup the message
+	msg_req_ptr->HEADER->SOURCE_QID = msg_qid;
+	msg_req_ptr->HEADER->TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
+	msg_req_ptr->CMD_ID = DELETE;
+	msg_req_ptr->TASK_INFO->tid = task_id;
+
+	// Send message
+	_msgq_send(msg_req_ptr);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to send message from ______ \n");
+		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	 // Wait for the return message:
+	msg_res_ptr = _msgq_receive(msg_qid, 0);
 
 }
 
