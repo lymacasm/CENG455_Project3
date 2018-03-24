@@ -147,6 +147,9 @@ static uint8_t queue_find_and_remove(QUEUE_STRUCT_PTR list, _task_id tid)
 			/* Remove item from the queue */
 			_queue_unlink(list, (QUEUE_ELEMENT_STRUCT_PTR)list_itr);
 
+			/* Free the memory */
+			_partition_free(list_itr);
+
 			/* Return TRUE for a successful operation */
 			return TRUE;
 		}
@@ -183,6 +186,31 @@ static uint8_t queue_find(QUEUE_STRUCT_PTR list, _task_id tid)
 	return FALSE;
 }
 
+static uint8_t queue_remove_all(QUEUE_STRUCT_PTR list, const uint8_t delete_option)
+{
+	SCH_TASK_NODE_PTR list_itr;
+	uint32_t count = _queue_get_size(list);
+
+	/* Delete all elements in queue */
+	while(count > 0)
+	{
+		/* Remove first element in queue */
+		list_itr = (SCH_TASK_NODE_PTR)_queue_dequeue(list);
+
+		/* Destroy task */
+		if(delete_option)
+		{
+			_task_destroy(list_itr->TID);
+		}
+
+		/* Free the memory for that element */
+		_partition_free(list_itr);
+
+		/* Decrement counter */
+		count--;
+	}
+}
+
 /*
 ** ===================================================================
 **     Callback    : scheduler_task
@@ -200,7 +228,6 @@ void scheduler_task(os_task_param_t task_init_data)
 	SCHEDULER_REQUEST_MSG_PTR request_msg;
 	SCHEDULER_RESPONSE_MSG_PTR response_msg;
 	_queue_id msg_qid;
-	_mqx_uint min_task_priority;
 	_partition_id task_list_pid;
 
 	/* Initialize queues */
@@ -248,20 +275,27 @@ void scheduler_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
-	/* Get absolute lowest task priority */
-	min_task_priority = _sched_get_min_priority(0);
-
 #ifdef PEX_USE_RTOS
 	while (1) {
 #endif
 		time_t timeout = 0;
-		time_t abs_deadline = 0;
 		if(!_queue_is_empty(&active_list))
 		{
-			SCH_TASK_NODE_PTR active_list_itr;
+			SCH_TASK_NODE_PTR first_active_task;
+			MQX_TICK_STRUCT_PTR current_time;
+			time_t abs_deadline;
+
+			/* Get the task with the soonest deadline */
+			first_active_task = (SCH_TASK_NODE_PTR)_queue_head(&active_list);
 
 			/* Get the soonest deadline */
-			//active_list_itr = (SCH_TASK_NODE_PTR)_queue_head
+			abs_deadline = first_active_task->ABS_DEADLINE;
+
+			/* Get the current time */
+			_time_get_ticks(current_time);
+
+			/* Get the timeout */
+			timeout = abs_deadline - current_time->TICKS[0];
 		}
 
 		/* Block until the next deadline or until a message is received */
@@ -307,6 +341,9 @@ void scheduler_task(os_task_param_t task_init_data)
 
 				/* Populate task id */
 				response_msg->TID = new_task_tid;
+
+				/* Set status */
+				response_msg->STATUS = SUCCESSFUL;
 				break;
 
 			/* Delete a task */
@@ -314,22 +351,58 @@ void scheduler_task(os_task_param_t task_init_data)
 				response_msg->ACK_ID = DELETE_ACK;
 				if(queue_find_and_remove(&active_list, request_msg->TASK_INFO->tid))
 				{
-					_task_destroy(request_msg->TASK_INFO->tid);
 					/* Tell the requester everything was good */
+					response_msg->STATUS = SUCCESSFUL;
+					response_msg->TID = request_msg->TASK_INFO->tid;
 				}
 				else if(queue_find(&overdue_list, request_msg->TASK_INFO->tid))
 				{
-					/* Tell the requester it was late! */
+					/* Tell the requester the task didn't meet its deadline and has already been deleted */
+					response_msg->STATUS = OVERDUE;
+					response_msg->TID = request_msg->TASK_INFO->tid;
+				}
+				else
+				{
+					/* Tell the requestor the task didn't exist */
+					response_msg->STATUS = FAILED;
+					response_msg->TID = 0;
 				}
 				break;
 			case(ACTIVE_LIST):
 				response_msg->ACK_ID = ACTIVE_LIST_ACK;
+				if(_queue_get_size(&active_list) > 0)
+				{
+					response_msg->STATUS = SUCCESSFUL;
+					response_msg->TASK_LIST = &active_list;
+				}
+				else
+				{
+					response_msg->STATUS = FAILED;
+					response_msg->TASK_LIST = NULL;
+				}
 				break;
 			case(OVRDUE_LIST):
 				response_msg->ACK_ID = OVRDUE_LIST_ACK;
+				if(_queue_get_size(&overdue_list) > 0)
+				{
+					response_msg->STATUS = SUCCESSFUL;
+					response_msg->TASK_LIST = &overdue_list;
+				}
+				else
+				{
+					response_msg->STATUS = FAILED;
+					response_msg->TASK_LIST = NULL;
+				}
 				break;
 			case(RESET):
 				response_msg->ACK_ID = RESET_ACK;
+
+				/* Remove all elements from active queue, and terminate all associated tasks */
+				queue_remove_all(&active_list, TRUE);
+
+				/* Remove all elements from overdue queue, don't try and terminate tasks */
+				queue_remove_all(&overdue_list, FALSE);
+
 				break;
 			default:
 				response_msg->ACK_ID = SCH_UNKNOWN_ACK;
@@ -343,15 +416,19 @@ void scheduler_task(os_task_param_t task_init_data)
 			_msg_free(request_msg);
 		}
 		/* Task deadline elapsed. Kill task. */
-		else
+		else if(timeout > 0)
 		{
-			/* Move task to overdue list */
+			SCH_TASK_NODE_PTR overdue_task;
+
+			/* Remove overdue task from active list */
+			overdue_task = (SCH_TASK_NODE_PTR)_queue_dequeue(&active_list);
+
+			/* Add overdue task to overdue list */
+			_queue_enqueue(&overdue_list, (QUEUE_ELEMENT_STRUCT_PTR)overdue_task);
+
 			/* Terminate task */
+			_task_destroy(overdue_task->TID);
 		}
-   
-    
-    
-    
 #ifdef PEX_USE_RTOS   
 	}
 #endif    

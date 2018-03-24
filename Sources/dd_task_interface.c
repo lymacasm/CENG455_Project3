@@ -54,16 +54,16 @@ _task_id dd_tcreate(uint32_t template_index, time_t deadline){
 	// Managing Ticks
 	_time_get_ticks(&ticks);
 
-	new_task->deadline = deadline;
-	new_task->task_type = template_index;
-	new_task->creation_time = ticks->TICKS[0];
+	new_task.deadline = deadline;
+	new_task.task_type = template_index;
+	new_task.creation_time = ticks.TICKS[0];
 
 
 	// Setup the message
-	msg_req_ptr->HEADER->SOURCE_QID = msg_qid;
-	msg_req_ptr->HEADER->TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
+	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
+	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
 	msg_req_ptr->CMD_ID = CREATE;
-	msg_req_ptr->TASK_INFO = new_task;
+	msg_req_ptr->TASK_INFO = &new_task;
 
 	// Send message
 	_msgq_send(msg_req_ptr);
@@ -78,7 +78,7 @@ _task_id dd_tcreate(uint32_t template_index, time_t deadline){
 	msg_res_ptr = _msgq_receive(msg_qid, 0);
 
 	// Check Status
-	if (msg_res_ptr->STATUS == FAILURE){
+	if (msg_res_ptr->STATUS == FAILED){
 	 //printf("User Task failed to acquire Read Privileges!");
 		_task_set_error(MQX_OK);
 		_msgq_close(msg_qid);

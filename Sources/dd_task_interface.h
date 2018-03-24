@@ -8,6 +8,8 @@
 #ifndef SOURCES_DD_TASK_INTERFACE_H_
 #define SOURCES_DD_TASK_INTERFACE_H_
 
+#include <stdio.h>
+
 /* Structs for task lists. Doubly linked list for easy sorting */
 struct task_list {
 	_task_id tid;
