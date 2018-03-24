@@ -44,6 +44,7 @@
 #include "UserTask.h"
 #include "SchedulerTask.h"
 #include "PeriodicTaskGen.h"
+#include "PeriodicTask.h"
 
 #include "dd_task_interface.h"
 #include <message.h>
@@ -95,6 +96,7 @@ typedef struct scheduler_request_msg
 	MESSAGE_HEADER_STRUCT   HEADER;
 	_scheduler_cmd			CMD_ID;
 	struct task_list*		TASK_INFO;
+	uint32_t				PARAMETER;
 } SCHEDULER_REQUEST_MSG, * SCHEDULER_REQUEST_MSG_PTR;
 
 /* The response message struct that is sent by scheduler */
