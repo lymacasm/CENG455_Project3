@@ -77,8 +77,15 @@ typedef enum scheduler_cmd
 	OVRDUE_LIST_ACK,
 	RESET,
 	RESET_ACK,
+	FAILURE_ACK,
 	SCH_UNKNOWN_ACK
 } _scheduler_cmd;
+
+typedef enum status
+{
+	FAILURE = 0,
+	SUCCESS
+} _status;
 
 /* The request message struct that is received by scheduler */
 typedef struct scheduler_request_msg
@@ -95,6 +102,7 @@ typedef struct scheduler_response_msg
 	_scheduler_cmd			ACK_ID;
 	_task_id				TID;
 	QUEUE_STRUCT_PTR		TASK_LIST;
+	_status					STATUS;
 } SCHEDULER_RESPONSE_MSG, * SCHEDULER_RESPONSE_MSG_PTR;
 
 /*
