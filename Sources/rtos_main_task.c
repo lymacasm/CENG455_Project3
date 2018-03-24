@@ -33,6 +33,7 @@
 #include "os_tasks.h"
 #include "user_task.h"
 #include "scheduler.h"
+#include "periodic_task_gen.h"
 #include "uart_handler.h"
 #include <stdio.h>
 #include <mutex.h>

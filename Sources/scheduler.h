@@ -43,6 +43,7 @@
 #include "myUART.h"
 #include "UserTask.h"
 #include "SchedulerTask.h"
+#include "PeriodicTaskGen.h"
 
 #include "dd_task_interface.h"
 #include <message.h>

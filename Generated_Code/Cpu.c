@@ -8,7 +8,7 @@
 **     Repository  : KSDK 1.3.0
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-13, 15:50, # CodeGen: 9
+**     Date/Time   : 2018-03-24, 15:28, # CodeGen: 10
 **     Abstract    :
 **
 **     Settings    :
@@ -71,6 +71,7 @@
 #include "os_tasks.h"
 #include "user_task.h"
 #include "scheduler.h"
+#include "periodic_task_gen.h"
 
 
 #ifdef __cplusplus
@@ -123,6 +124,9 @@ void Components_Init(void)
   /*! SchedulerTask Auto initialization start */ 
   (void)SchedulerTask_Init();
   /*! SchedulerTask Auto initialization end */                       
+  /*! PeriodicTaskGen Auto initialization start */ 
+  (void)PeriodicTaskGen_Init();
+  /*! PeriodicTaskGen Auto initialization end */                       
 }
 #endif /* CPU_COMPONENTS_INIT */
 
