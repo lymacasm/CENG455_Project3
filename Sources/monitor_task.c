@@ -40,6 +40,7 @@
 extern "C" {
 #endif 
 
+uint32_t idle_counter = 0;
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -54,18 +55,37 @@ extern "C" {
 */
 void monitor_task(os_task_param_t task_init_data)
 {
-  /* Write your local variable definition here */
+	uint32_t check_overdue;
+	uint32_t efficiency;
+	uint32_t pros_utilization;
+	struct task_list * list;
+	MQX_TICK_STRUCT_PTR current_t;
+	time_t total_time = 0;
+	time_t schdeuler_overhead;		// to be calculated
+
   
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
-    /* Write your code here ... */
-    
-    
-    OSA_TimeDelay(10);                 /* Example code (for task release) */
-   
-    
-    
+
+	// check overdue list every 5 iteration
+	if(counter % 5 == 0){
+		check_overdue = dd_return_overdue_list(*list);
+		if (check_overdue != 0 && *list != NULL){
+			printf("Scheduler not performing at Optimal level \n");
+			return;
+		}
+	}
+
+	// Absolute time
+	_time_get_ticks(current_t);
+	total_time = current_t->TICKS[0];		// could use HW_TICKS ?
+
+	// Calculating Processor Utilization
+	efficiency = ((idle_counter*10)+(schdeuler_overhead))/total_time;
+	printf("Efficiency = %lX \n",efficiency);  // for debugging purpose
+	pros_utilization = 1 - efficiency;
+    printf("Processor Utilization = %lX \n",pros_utilization);
     
 #ifdef PEX_USE_RTOS   
   }
@@ -92,9 +112,8 @@ void idle_task(os_task_param_t task_init_data)
     
     
     OSA_TimeDelay(10);                 /* Example code (for task release) */
+    idle_counter++;
    
-    
-    
     
 #ifdef PEX_USE_RTOS   
   }

@@ -368,7 +368,7 @@ uint32_t dd_return_overdue_list(struct task_list ** list){
 		printf("Mutex lock failed.\n");
 		printf("Error: %x\n", error);
 		_task_set_error(MQX_OK);
-		return FALSE;
+		return 0;
 	}
 
 	// Message queue initialization code
@@ -419,7 +419,7 @@ uint32_t dd_return_overdue_list(struct task_list ** list){
 	if(msg_res_ptr->STATUS != SUCCESSFUL)
 	{
 		printf("Failure to read overdue message list.\n");
-		return FALSE;
+		return 0;
 	}
 
 	// copy pointer to active list
