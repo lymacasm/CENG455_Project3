@@ -188,7 +188,7 @@ static uint8_t queue_find(QUEUE_STRUCT_PTR list, _task_id tid)
 	return FALSE;
 }
 
-static uint8_t queue_remove_all(QUEUE_STRUCT_PTR list, const uint8_t delete_option)
+static void queue_remove_all(QUEUE_STRUCT_PTR list, const uint8_t delete_option)
 {
 	SCH_TASK_NODE_PTR list_itr;
 	uint32_t count = _queue_get_size(list);
@@ -232,6 +232,8 @@ void scheduler_task(os_task_param_t task_init_data)
 	_queue_id msg_qid;
 	_partition_id task_list_pid;
 
+	printf("\n\nScheduler created!\n\n");
+
 	/* Initialize queues */
 	_queue_init(&active_list, 0);
 	_queue_init(&overdue_list, 0);
@@ -251,7 +253,7 @@ void scheduler_task(os_task_param_t task_init_data)
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to open request message pool.\n");
-		printf("Error code: %x\n", _task_get_error());
+		printf("Error code: %x\n", (unsigned int)_task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
@@ -261,7 +263,7 @@ void scheduler_task(os_task_param_t task_init_data)
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to open response message pool.\n");
-		printf("Error code: %x\n", _task_get_error());
+		printf("Error code: %x\n", (unsigned int)_task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
@@ -272,7 +274,7 @@ void scheduler_task(os_task_param_t task_init_data)
 	if(_task_get_error() != MQX_OK)
 	{
 		printf("Failed to create partition.\n");
-		printf("Error code: %x\n", _task_get_error());
+		printf("Error code: %x\n", (unsigned int)_task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
@@ -284,7 +286,7 @@ void scheduler_task(os_task_param_t task_init_data)
 		if(!_queue_is_empty(&active_list))
 		{
 			SCH_TASK_NODE_PTR first_active_task;
-			MQX_TICK_STRUCT_PTR current_time;
+			MQX_TICK_STRUCT current_time;
 			time_t abs_deadline;
 
 			/* Get the task with the soonest deadline */
@@ -294,11 +296,15 @@ void scheduler_task(os_task_param_t task_init_data)
 			abs_deadline = first_active_task->ABS_DEADLINE;
 
 			/* Get the current time */
-			_time_get_ticks(current_time);
+			_time_get_elapsed_ticks(&current_time);
 
 			/* Get the timeout */
-			timeout = abs_deadline - current_time->TICKS[0];
+			timeout = abs_deadline - current_time.TICKS[0];
+
+			//printf("Abs Deadline:0x%x, Current Time:0x%x\n", abs_deadline, current_time.TICKS[0]);
 		}
+
+		//printf("Sleeping for %x ticks\n", (unsigned int)timeout);
 
 		/* Block until the next deadline or until a message is received */
 		request_msg = (SCHEDULER_REQUEST_MSG_PTR)_msgq_receive(msg_qid, timeout);
@@ -318,6 +324,7 @@ void scheduler_task(os_task_param_t task_init_data)
 			{
 			/* Schedule a new task */
 			case(CREATE):
+				//printf("Creating task\n");
 				response_msg->ACK_ID = CREATE_ACK;
 				SCH_TASK_NODE_PTR new_task;
 				_task_id new_task_tid;
@@ -332,7 +339,7 @@ void scheduler_task(os_task_param_t task_init_data)
 				/* Initialize members of new_task */
 				new_task->CREATION_TIME = request_msg->TASK_INFO->creation_time;
 				new_task->TASK_TYPE = request_msg->TASK_INFO->task_type;
-				new_task->ABS_DEADLINE = new_task->CREATION_TIME +
+				new_task->ABS_DEADLINE = request_msg->TASK_INFO->creation_time +
 						request_msg->TASK_INFO->deadline;
 				new_task->TID = new_task_tid;
 
@@ -347,16 +354,19 @@ void scheduler_task(os_task_param_t task_init_data)
 
 				/* Set status */
 				response_msg->STATUS = SUCCESSFUL;
+				//printf("Created task %x!\n", (unsigned int)new_task_tid);
 				break;
 
 			/* Delete a task */
 			case(DELETE):
 				response_msg->ACK_ID = DELETE_ACK;
+				//printf("Deleting task %x\n", (unsigned int)request_msg->TASK_INFO->tid);
 				if(queue_find_and_remove(&active_list, request_msg->TASK_INFO->tid))
 				{
 					/* Tell the requester everything was good */
 					response_msg->STATUS = SUCCESSFUL;
 					response_msg->TID = request_msg->TASK_INFO->tid;
+					//printf("Task deleted\n");
 				}
 				else if(queue_find(&overdue_list, request_msg->TASK_INFO->tid))
 				{
@@ -372,11 +382,13 @@ void scheduler_task(os_task_param_t task_init_data)
 				}
 				break;
 			case(ACTIVE_LIST):
+				printf("Retrieving active list\n");
 				response_msg->ACK_ID = ACTIVE_LIST_ACK;
 				if(_queue_get_size(&active_list) > 0)
 				{
 					response_msg->STATUS = SUCCESSFUL;
 					response_msg->TASK_LIST = &active_list;
+					printf("List retrieved\n");
 				}
 				else
 				{
@@ -385,11 +397,13 @@ void scheduler_task(os_task_param_t task_init_data)
 				}
 				break;
 			case(OVRDUE_LIST):
+				printf("Retrieving overdue list\n");
 				response_msg->ACK_ID = OVRDUE_LIST_ACK;
 				if(_queue_get_size(&overdue_list) > 0)
 				{
 					response_msg->STATUS = SUCCESSFUL;
 					response_msg->TASK_LIST = &overdue_list;
+					printf("List retrieved\n");
 				}
 				else
 				{
@@ -398,6 +412,7 @@ void scheduler_task(os_task_param_t task_init_data)
 				}
 				break;
 			case(RESET):
+				printf("Resetting the scheduler\n");
 				response_msg->ACK_ID = RESET_ACK;
 
 				/* Remove all elements from active queue, and terminate all associated tasks */
@@ -408,6 +423,7 @@ void scheduler_task(os_task_param_t task_init_data)
 
 				break;
 			default:
+				printf("Unknown request received\n");
 				response_msg->ACK_ID = SCH_UNKNOWN_ACK;
 				break;
 			}
@@ -428,6 +444,8 @@ void scheduler_task(os_task_param_t task_init_data)
 
 			/* Add overdue task to overdue list */
 			_queue_enqueue(&overdue_list, (QUEUE_ELEMENT_STRUCT_PTR)overdue_task);
+
+			printf("Task %x did not meet its deadline\n", (unsigned int)overdue_task->TID);
 
 			/* Terminate task */
 			_task_destroy(overdue_task->TID);

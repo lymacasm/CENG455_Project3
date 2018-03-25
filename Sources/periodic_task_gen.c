@@ -46,12 +46,19 @@ PERIODIC_TASK task_list[TASK_LIST_SIZE] = {
 		/*
 	   Period, Ex.Time, Deadline, Phase, Execution Cycles
 		 */
-		{1000, 200,		600,	  0, 		0},
-		{500,  100,		350, 	  0, 		0},
-		{100,  20,		70, 	  0, 		0},
-		{5000, 100, 	150, 	  0, 		0},
-		{3000, 1000, 	3000, 	  0, 		0}
+		//{1000, 200,		600,	  0, 		0},
+		//{500,  100,		350, 	  0, 		0},
+		//{100,  20,		70, 	  0, 		0},
+		//{5000, 100, 	150, 	  0, 		0},
+		{500, 60, 	500, 	  0, 		0}
 };
+
+/*
+#define TASK_LIST_SIZE 1
+
+PERIODIC_TASK task_list[TASK_LIST_SIZE] = {
+	   {5000,	1000,		4000,	  1000, 		0}
+};*/
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -72,12 +79,12 @@ void periodic_task_gen(os_task_param_t task_init_data)
 #ifdef PEX_USE_RTOS
 	while (1) {
 #endif
-		_time_get_ticks(&current_time);
+		_time_get_elapsed_ticks(&current_time);
 
 		/* Find the next task that needs to be created */
 		uint32_t i;
 		uint32_t min_task_idx = 0;
-		time_t min_task_time = 0xFFFFFFFF;
+		time_t min_task_time = 0x7FFFFFFF;
 		/* Find the min wait time to the next periodic task creation */
 		for(i = 0; i < TASK_LIST_SIZE; i++)
 		{
@@ -116,11 +123,27 @@ void periodic_task_gen(os_task_param_t task_init_data)
 */
 void periodic_task(os_task_param_t task_init_data)
 {
-	/* Delay for execution time */
-	_time_delay_ticks(task_list[task_init_data].exec_time);
+	MQX_TICK_STRUCT start_time;
 
-	/* Delete and deschedule myself */
-	dd_delete(_task_get_id());
+	/* Get the current time */
+	_time_get_elapsed_ticks(&start_time);
+
+	/* Delay for execution time */
+	while(1)
+	{
+		MQX_TICK_STRUCT now_time;
+		_time_get_elapsed_ticks(&now_time);
+		if((now_time.TICKS[0] - start_time.TICKS[0]) > task_list[task_init_data].exec_time)
+		{
+			printf("Deadline met!\n");
+
+			/* Delete and deschedule myself */
+			dd_delete(_task_get_id());
+
+			/* Shouldn't reach here */
+			_task_block();
+		}
+	}
 }
 
 /* END periodic_task_gen */

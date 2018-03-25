@@ -36,6 +36,7 @@
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
 #include "uart_handler.h"
+#include "dd_task_interface.h"
 #include <stdio.h>
 #include <mutex.h>
 
@@ -73,6 +74,8 @@ void main_task(os_task_param_t task_init_data)
 	uint32_t  			i;
 	MUTEX_ATTR_STRUCT 	mutexattr;
 
+	dd_init();
+
 	/* Initialize mutex attributes: */
 	if (_mutatr_init(&mutexattr) != MQX_OK) {
 		printf("Initializing mutex attributes failed.\n");
@@ -85,10 +88,24 @@ void main_task(os_task_param_t task_init_data)
 		 _mqx_exit(0);
 	}
 
+	/* Initialize mutex attributes: */
+	if (_mutatr_init(&mutexattr) != MQX_OK) {
+		printf("Initializing mutex attributes failed.\n");
+		_mqx_exit(0);
+	}
+
+	/* Initialize the mutex: */
+	if (_mutex_init(&scheduler_mutex, &mutexattr) != MQX_OK) {
+		printf("Initializing scheduler mutex failed.\n");
+		 _mqx_exit(0);
+	}
+
 	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
 	PEX_components_init();
 #endif 
+
+	_task_block();
 
 	/* End of Processor Expert components initialization.  */
 	main_qid = _msgq_open(MAIN_QUEUE, 0);
