@@ -113,6 +113,7 @@
   <FILES>
     <GeneratedCs>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\Cpu.c</PathName>
+      <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\IdleTask.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\MainTask.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\MonitorTask.c</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PeriodicTask.c</PathName>
@@ -271,6 +272,7 @@
     </GeneratedCs>
     <GeneratedHs>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\Cpu.h</PathName>
+      <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\IdleTask.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\MainTask.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\MonitorTask.h</PathName>
       <PathName>C:\Users\lymacasm.UVIC.000\CENG455_Project3\Generated_Code\PE_low_level_init.h</PathName>

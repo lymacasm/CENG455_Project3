@@ -46,6 +46,7 @@
 #include "PeriodicTaskGen.h"
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
+#include "IdleTask.h"
 
 #include "dd_task_interface.h"
 #include <message.h>

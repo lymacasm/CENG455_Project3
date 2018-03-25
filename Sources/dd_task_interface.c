@@ -10,7 +10,16 @@
 #include <stdio.h>
 
 #define DD_INTERFACE_QUEUE 9
+#define TLIST_INIT_SIZE 8
+#define TLIST_GROW_SIZE 4
 
+_partition_id task_list_partition = 0;
+
+_task_id dd_init()
+{
+	task_list_partition = _partition_create(sizeof(SCH_TASK_NODE), TLIST_INIT_SIZE,
+				TLIST_GROW_SIZE, 0);
+}
 
 _task_id dd_tcreate(uint32_t template_index, uint32_t task_param, time_t deadline){
 	/*

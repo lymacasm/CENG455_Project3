@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-24, 16:50, # CodeGen: 12
+**     Date/Time   : 2018-03-24, 17:22, # CodeGen: 13
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -68,6 +68,7 @@
 #include "PeriodicTaskGen.h"
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
+#include "IdleTask.h"
 extern void * kernel_data_prv;
 #if MQXCFG_PREALLOCATED_SYSTEM_STACKS
 extern uint8_t mqx_interrupt_stack[];
@@ -153,6 +154,17 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Stack size                     */  MONITORTASK_TASK_STACK_SIZE,
     /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(MONITORTASK_TASK_PRIORITY)),
     /* Task name                      */  MONITORTASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: IdleTask */
+  {
+    /* Task number                    */  IDLETASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)idle_task,
+    /* Stack size                     */  IDLETASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(IDLETASK_TASK_PRIORITY)),
+    /* Task name                      */  IDLETASK_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)

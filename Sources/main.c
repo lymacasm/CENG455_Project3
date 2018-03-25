@@ -51,6 +51,7 @@
 #include "PeriodicTaskGen.h"
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
+#include "IdleTask.h"
 #if CPU_INIT_CONFIG
   #include "Init_Config.h"
 #endif

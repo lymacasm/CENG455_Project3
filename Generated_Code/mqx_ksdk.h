@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-24, 16:50, # CodeGen: 12
+**     Date/Time   : 2018-03-24, 17:22, # CodeGen: 13
 **     Contents    :
 **         _int_default_isr                - void _int_default_isr(void * vector_number);
 **         _int_disable                    - void _int_disable();
@@ -362,6 +362,7 @@ typedef task_param_t os_task_param_t;
 #define PERIODICTASKGEN_TASK 5U
 #define PERIODICTASK_TASK    6U
 #define MONITORTASK_TASK     7U
+#define IDLETASK_TASK        8U
 
 extern const MQX_INITIALIZATION_STRUCT MQX_init_struct;
 #define PEX_RTOS_START() _mqx( (MQX_INITIALIZATION_STRUCT_PTR) &MQX_init_struct );
