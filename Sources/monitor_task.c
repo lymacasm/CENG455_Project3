@@ -58,12 +58,13 @@ uint32_t idle_counter = 0;
 void monitor_task(os_task_param_t task_init_data)
 {
 	uint32_t check_overdue;
+	uint32_t check_overhead;
 	uint32_t wait_time;
 	uint32_t pros_utilization;
 	struct task_list * list;
 	MQX_TICK_STRUCT current_t;
 	time_t total_time = 0;
-	time_t schdeuler_overhead = 0;		// to be calculated
+	time_t schdeuler_overhead;
 
   
 #ifdef PEX_USE_RTOS
@@ -79,9 +80,16 @@ void monitor_task(os_task_param_t task_init_data)
 		}
 	}
 
+	// System overhead
+	check_overhead = dd_return_overhead(schdeuler_overhead);
+	if (check_overhead == 0){
+		printf("Failed to calculate overhead! \n");
+		return;
+	}
+
 	// Absolute time
 	_time_get_ticks(&current_t);
-	total_time = current_t.TICKS[0];		// could use HW_TICKS ?
+	total_time = current_t.TICKS[0];
 
 	// Calculating Processor Utilization
 	wait_time = ((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead))/total_time;

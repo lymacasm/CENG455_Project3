@@ -28,6 +28,6 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t task_param, time_t deadlin
 _task_id dd_delete(_task_id task_id);
 uint32_t dd_return_active_list(struct task_list ** list);
 uint32_t dd_return_overdue_list(struct task_list ** list);
-uint32_t dd_return_overhead(uint32_t * overhead);
+uint32_t dd_return_overhead(time_t overhead);
 
 #endif /* SOURCES_DD_TASK_INTERFACE_H_ */
