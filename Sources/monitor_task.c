@@ -65,7 +65,18 @@ void monitor_task(os_task_param_t task_init_data)
 	time_t total_time = 0;
 	time_t schdeuler_overhead = 0;		// to be calculated
 	uint32_t counter = 0;
+	_mqx_uint min_priority;
+	_mqx_uint old_priority;
 
+	_task_block();
+
+	/* Set yourself to lowest priority */
+	min_priority = _sched_get_min_priority(0);
+	if(_task_set_priority(_task_get_id(), min_priority, &old_priority) != MQX_OK)
+	{
+		printf("Failed to set the priority of monitor to lowest (%u)\n", (unsigned int)min_priority);
+		_task_block();
+	}
   
 #ifdef PEX_USE_RTOS
   while (1) {
@@ -85,10 +96,10 @@ void monitor_task(os_task_param_t task_init_data)
 	total_time = current_t.TICKS[0];		// could use HW_TICKS ?
 
 	// Calculating Processor Utilization
-	wait_time = ((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead))/total_time;
-	printf("Efficiency = %lX \n",wait_time);  // for debugging purpose
-	pros_utilization = 1 - wait_time;
-    printf("Processor Utilization = %lX \n",pros_utilization);
+	wait_time = (100*((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead)))/total_time;
+	printf("Efficiency = %u \n",wait_time);  // for debugging purpose
+	pros_utilization = 100 - wait_time;
+    printf("Processor Utilization = %u \n",pros_utilization);
     
 #ifdef PEX_USE_RTOS   
   }
@@ -107,6 +118,18 @@ void monitor_task(os_task_param_t task_init_data)
 void idle_task(os_task_param_t task_init_data)
 {
   /* Write your local variable definition here */
+	_mqx_uint min_priority;
+	_mqx_uint old_priority;
+
+	_task_block();
+
+	/* Set yourself to second lowest priority */
+	min_priority = _sched_get_min_priority(0);
+	if(_task_set_priority(_task_get_id(), min_priority - 1, &old_priority) != MQX_OK)
+	{
+		printf("Failed to set the priority of monitor to lowest (%u)\n", (unsigned int)min_priority);
+		_task_block();
+	}
   
 #ifdef PEX_USE_RTOS
   while (1) {

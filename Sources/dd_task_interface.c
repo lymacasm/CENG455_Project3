@@ -41,10 +41,41 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t task_param, time_t deadlin
 
 	_queue_id msg_qid;
 	_task_id taskID;
+	_status_sch status;
 	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
 	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
-	struct task_list new_task;
+	struct task_list* new_task;
 	MQX_TICK_STRUCT ticks;
+	TD_STRUCT_PTR td_ptr;
+
+	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
+	if(msg_req_ptr == NULL){
+		printf("Could not allocate a message from the Scheduler\n");
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	new_task = (struct task_list *)_partition_alloc(task_list_partition);
+	if(_task_get_error() != MQX_OK){
+		printf("Failed to allocate task memory from partition.\n");
+		printf("Error code: %x\n", _task_get_error());
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	// Managing Ticks
+	_time_get_elapsed_ticks(&ticks);
+
+	new_task->deadline = deadline;
+	new_task->task_type = template_index;
+	new_task->creation_time = ticks.TICKS[0];
+
+
+	// Setup the message
+	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
+	msg_req_ptr->CMD_ID = CREATE;
+	msg_req_ptr->TASK_INFO = new_task;
+	msg_req_ptr->PARAMETER = task_param;
 
 	// LOCK MUTEX
 	_mqx_uint error = _mutex_lock(&scheduler_mutex);
@@ -61,48 +92,35 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t task_param, time_t deadlin
 		printf("Failed to open Schedule message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
-
-	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
-	if(msg_req_ptr == NULL){
-		printf("Could not allocate a message from the Scheduler\n");
-		_task_set_error(MQX_OK);
-		return 0;
-	}
-
-	// Managing Ticks
-	_time_get_elapsed_ticks(&ticks);
-
-	new_task.deadline = deadline;
-	new_task.task_type = template_index;
-	new_task.creation_time = ticks.TICKS[0];
-
-
-	// Setup the message
-	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
-	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
-	msg_req_ptr->CMD_ID = CREATE;
-	msg_req_ptr->TASK_INFO = &new_task;
-	msg_req_ptr->PARAMETER = task_param;
 
 	// Send message
+	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
 	_msgq_send(msg_req_ptr);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from ______ \n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	 // Wait for the return message:
 	msg_res_ptr = _msgq_receive(msg_qid, 0);
 
+	/* Grab information and free message */
+	status = msg_res_ptr->STATUS;
+	taskID = msg_res_ptr->TID;
+	_msg_free(msg_res_ptr);
+
 	_msgq_close(msg_qid);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
@@ -110,17 +128,25 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t task_param, time_t deadlin
 	_mutex_unlock(&scheduler_mutex);
 
 	// Check Status
-	if (msg_res_ptr->STATUS == FAILED){
-	 //printf("User Task failed to acquire Read Privileges!");
-		_task_set_error(MQX_OK);
-		_msgq_close(msg_qid);
+	if (status == FAILED){
+		printf("Failed to create a new task\n");
 		return 0;
 	}
 
-	taskID = msg_res_ptr->TID;
-
-	// Request queue destroy
-	_msg_free(msg_res_ptr);
+	/* Move tasked from blocked state to the ready state */
+	td_ptr = _task_get_td(taskID);
+	_int_disable();
+	if(td_ptr != NULL)
+	{
+		_task_ready(td_ptr);
+		if(_task_get_error() != MQX_OK){
+			printf("Failed to schedule task.\n");
+			printf("Error code: %x\n", (unsigned int)_task_get_error());
+			_task_set_error(MQX_OK);
+			taskID = 0;
+		}
+	}
+	_int_enable();
 
 	return taskID;
 
@@ -135,7 +161,20 @@ _task_id dd_delete(_task_id task_id){
 	_queue_id msg_qid;
 	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
 	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
+	_status_sch status;
 	_task_id taskID;
+
+	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
+	if(msg_req_ptr == NULL){
+		printf("Could not allocate a message from the Scheduler\n");
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	// Setup the message
+	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
+	msg_req_ptr->CMD_ID = DELETE;
+	msg_req_ptr->TASK_INFO->tid = task_id;
 
 	// LOCK MUTEX
 	_mqx_uint error = _mutex_lock(&scheduler_mutex);
@@ -152,67 +191,55 @@ _task_id dd_delete(_task_id task_id){
 		printf("Failed to open Schedule message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
-
-	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
-	if(msg_req_ptr == NULL){
-		printf("Could not allocate a message from the Scheduler\n");
-		_task_set_error(MQX_OK);
-		return 0;
-	}
-
-
-	// Setup the message
-	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
-	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
-	msg_req_ptr->CMD_ID = DELETE;
-	msg_req_ptr->TASK_INFO->tid = task_id;
 
 	// Send message
+	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
 	_msgq_send(msg_req_ptr);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from ______ \n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	 // Wait for the return message:
 	msg_res_ptr = _msgq_receive(msg_qid, 0);
 
+	/* Get info and free message */
+	taskID = msg_res_ptr->TID;
+	status = msg_res_ptr->STATUS;
+	_msg_free(msg_res_ptr);
+
 	_msgq_close(msg_qid);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	// UNLOCK MUTEX
 	_mutex_unlock(&scheduler_mutex);
 
-	taskID = msg_res_ptr->TID;
-
 	// Check Status
-	if (msg_res_ptr->STATUS == FAILED){
+	if (status == FAILED){
 		printf("Task not created. \n");			// modify print statement later
-		_task_set_error(MQX_OK);
-		_msgq_close(msg_qid);
 		return 0;
 	}
-	else if (msg_res_ptr->STATUS == OVERDUE){
+	else if (status == OVERDUE){
 		printf("Task Overdue, cannot delete task. \n");		// modify print statement later
-		_task_set_error(MQX_OK);
-		_msgq_close(msg_qid);
+		_task_destroy(msg_res_ptr->TID);
 		return 0;
 	}
-	else if (msg_res_ptr->STATUS == SUCCESSFUL){
+	else if (status == SUCCESSFUL){
+		printf("Successfully deleted task\n");
 		_task_destroy(msg_res_ptr->TID);
 	}
-
-	// Request queue destroy
-	_msg_free(msg_res_ptr);
 
 	return taskID;
 }
@@ -226,11 +253,26 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	choice.
 	 */
 	_queue_id msg_qid;
+	_status_sch status;
 	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
 	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
 	QUEUE_STRUCT_PTR		active_list;
 	SCH_TASK_NODE_PTR 		active_list_itr;
 	struct task_list * 		list_itr;
+
+	/* Initialize output list to NULL */
+	*list = NULL;
+
+	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
+	if(msg_req_ptr == NULL){
+		printf("Could not allocate a message from the Scheduler\n");
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	// Setup the message
+	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
+	msg_req_ptr->CMD_ID = ACTIVE_LIST;
 
 	// LOCK MUTEX
 	_mqx_uint error = _mutex_lock(&scheduler_mutex);
@@ -247,53 +289,48 @@ uint32_t dd_return_active_list(struct task_list ** list){
 		printf("Failed to open Schedule message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
-
-	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
-	if(msg_req_ptr == NULL){
-		printf("Could not allocate a message from the Scheduler\n");
-		_task_set_error(MQX_OK);
-		return 0;
-	}
-
-
-	// Setup the message
-	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
-	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
-	msg_req_ptr->CMD_ID = ACTIVE_LIST;
 
 	// Send message
 	_msgq_send(msg_req_ptr);
+	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from ______ \n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	 // Wait for the return message:
 	msg_res_ptr = _msgq_receive(msg_qid, 0);
 
+	/* Grab info and free message */
+	active_list = (QUEUE_STRUCT_PTR)msg_res_ptr->TASK_LIST;
+	status = msg_res_ptr->STATUS;
+	_msg_free(msg_res_ptr);
+
 	_msgq_close(msg_qid);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	// UNLOCK MUTEX
 	_mutex_unlock(&scheduler_mutex);
 
-	if(msg_res_ptr->STATUS != SUCCESSFUL)
+	if(status != SUCCESSFUL)
 	{
 		printf("Failed to read active list\n");
 		return FALSE;
 	}
 
 	// copy pointer to active list
-	active_list = (QUEUE_STRUCT_PTR)msg_res_ptr->TASK_LIST;
 	active_list_itr = (SCH_TASK_NODE_PTR)_queue_head(active_list);
 
 	list_itr = *list;
@@ -303,7 +340,7 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	{
 		/* Allocate new list element */
 		struct task_list* list_item;
-		list_item = (struct task_list *)_partition_alloc(_partition_alloc);
+		list_item = (struct task_list *)_partition_alloc(task_list_partition);
 
 		/* Populate list element */
 		list_item->tid	= active_list_itr->TID;
@@ -326,7 +363,7 @@ uint32_t dd_return_active_list(struct task_list ** list){
 	{
 		/* Allocate new list element */
 		struct task_list* list_item;
-		list_item = (struct task_list *)_partition_alloc(_partition_alloc);
+		list_item = (struct task_list *)_partition_alloc(task_list_partition);
 
 		/* Populate list element */
 		list_item->tid	= active_list_itr->TID;
@@ -344,9 +381,6 @@ uint32_t dd_return_active_list(struct task_list ** list){
 		list_itr = list_item;
 	}
 
-	/* Free message memory */
-	_msg_free(msg_res_ptr);
-
 	return TRUE;
 }
 
@@ -356,11 +390,26 @@ uint32_t dd_return_overdue_list(struct task_list ** list){
 	to the requestor. Similar in structure as the dd_return_active_list primitive.
 	 */
 	_queue_id msg_qid;
+	_status_sch status;
 	SCHEDULER_REQUEST_MSG_PTR msg_req_ptr;
 	SCHEDULER_RESPONSE_MSG_PTR msg_res_ptr;
 	QUEUE_STRUCT_PTR		ovrdue_list;
 	SCH_TASK_NODE_PTR 		ovrdue_list_itr;
 	struct task_list * 		list_itr;
+
+	/* Initialize output list to NULL */
+	*list = NULL;
+
+	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
+	if(msg_req_ptr == NULL){
+		printf("Could not allocate a message from the Scheduler\n");
+		_task_set_error(MQX_OK);
+		return 0;
+	}
+
+	// Setup the message
+	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
+	msg_req_ptr->CMD_ID = OVRDUE_LIST;
 
 	// LOCK MUTEX
 	_mqx_uint error = _mutex_lock(&scheduler_mutex);
@@ -377,53 +426,48 @@ uint32_t dd_return_overdue_list(struct task_list ** list){
 		printf("Failed to open Schedule message queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
-
-	msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
-	if(msg_req_ptr == NULL){
-		printf("Could not allocate a message from the Scheduler\n");
-		_task_set_error(MQX_OK);
-		return 0;
-	}
-
-
-	// Setup the message
-	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
-	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
-	msg_req_ptr->CMD_ID = OVRDUE_LIST;
 
 	// Send message
+	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
 	_msgq_send(msg_req_ptr);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to send message from ______ \n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	 // Wait for the return message:
 	msg_res_ptr = _msgq_receive(msg_qid, 0);
 
+	/* Grab info and free message */
+	ovrdue_list = (QUEUE_STRUCT_PTR)msg_res_ptr->TASK_LIST;
+	status = msg_res_ptr->STATUS;
+	_msg_free(msg_res_ptr);
+
 	_msgq_close(msg_qid);
 	if(_task_get_error() != MQX_OK){
 		printf("Failed to close queue.\n");
 		printf("Error code: %x\n", _task_get_error());
 		_task_set_error(MQX_OK);
+		_mutex_unlock(&scheduler_mutex);
 		return 0;
 	}
 
 	// UNLOCK MUTEX
 	_mutex_unlock(&scheduler_mutex);
 
-	if(msg_res_ptr->STATUS != SUCCESSFUL)
+	if(status != SUCCESSFUL)
 	{
 		printf("Failure to read overdue message list.\n");
 		return 0;
 	}
 
 	// copy pointer to active list
-	ovrdue_list = (QUEUE_STRUCT_PTR)msg_res_ptr->TASK_LIST;
 	ovrdue_list_itr = (SCH_TASK_NODE_PTR)_queue_head(ovrdue_list);
 
 	list_itr = *list;
@@ -433,7 +477,7 @@ uint32_t dd_return_overdue_list(struct task_list ** list){
 	{
 		/* Allocate new list element */
 		struct task_list* list_item;
-		list_item = (struct task_list *)_partition_alloc(_partition_alloc);
+		list_item = (struct task_list *)_partition_alloc(task_list_partition);
 
 		/* Populate list element */
 		list_item->tid	= ovrdue_list_itr->TID;
@@ -476,9 +520,6 @@ uint32_t dd_return_overdue_list(struct task_list ** list){
 		/* Go to next element */
 		ovrdue_list_itr = (SCH_TASK_NODE_PTR)_queue_next(ovrdue_list, ovrdue_list_itr);
 	}
-
-	/* Free message memory */
-	_msg_free(msg_res_ptr);
 
 	return TRUE;
 }

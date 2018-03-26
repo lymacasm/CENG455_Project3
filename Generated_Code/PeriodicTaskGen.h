@@ -7,7 +7,7 @@
 **     Version     : Component 1.3.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-24, 15:28, # CodeGen: 10
+**     Date/Time   : 2018-03-26, 13:32, # CodeGen: 15
 **     Contents    :
 **         Init - osa_status_t PeriodicTaskGen_Init(void);
 **
@@ -66,7 +66,7 @@
 /* PeriodicTaskGen task stack size */  
 #define PERIODICTASKGEN_TASK_STACK_SIZE 1024U
 /* PeriodicTaskGen task priority value */  
-#define PERIODICTASKGEN_TASK_PRIORITY  9U
+#define PERIODICTASKGEN_TASK_PRIORITY  1U
 /*
 ** ===================================================================
 **     Method      :  Init (component OS_Task)

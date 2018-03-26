@@ -71,6 +71,7 @@ void main_task(os_task_param_t task_init_data)
 	/* Write your local variable definition here */
 	_queue_id 			main_qid;
 	_queue_id			my_write_qid;
+	_mqx_uint			min_priority;
 	uint32_t  			i;
 	MUTEX_ATTR_STRUCT 	mutexattr;
 

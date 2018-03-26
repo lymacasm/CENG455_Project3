@@ -104,6 +104,7 @@ void periodic_task_gen(os_task_param_t task_init_data)
 		_time_delay_ticks(min_task_time);
     
 		/* Create the periodic task */
+		printf("Creating task\n");
 		dd_tcreate(PERIODICTASK_TASK, min_task_idx, task_list[min_task_idx].deadline);
 
 		/* Create monitor task */
@@ -128,6 +129,7 @@ void periodic_task(os_task_param_t task_init_data)
 	/* Get the current time */
 	_time_get_elapsed_ticks(&start_time);
 
+
 	/* Delay for execution time */
 	while(1)
 	{
@@ -135,7 +137,7 @@ void periodic_task(os_task_param_t task_init_data)
 		_time_get_elapsed_ticks(&now_time);
 		if((now_time.TICKS[0] - start_time.TICKS[0]) > task_list[task_init_data].exec_time)
 		{
-			printf("Deadline met!\n");
+			printf("Deleting self.\n");
 
 			/* Delete and deschedule myself */
 			dd_delete(_task_get_id());
