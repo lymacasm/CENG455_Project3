@@ -60,6 +60,7 @@ extern "C" {
 _pool_id req_msg_pool;
 _pool_id rsp_msg_pool;
 
+
 /* Inserts the task into a sorted queue, in O(N) runtime */
 static void queue_insert_task(QUEUE_STRUCT_PTR list, SCH_TASK_NODE_PTR task)
 {
@@ -232,6 +233,12 @@ void scheduler_task(os_task_param_t task_init_data)
 	SCHEDULER_RESPONSE_MSG_PTR response_msg;
 	_queue_id msg_qid;
 	_partition_id task_list_pid;
+	MQX_TICK_STRUCT current_t;
+	/* Overhead timers */
+	time_t start_time = 0;
+	time_t end_time = 0;
+	time_t temp_overhead = 0;
+	time_t overhead = 0;
 
 	printf("\n\nScheduler created!\n\n");
 
@@ -305,10 +312,22 @@ void scheduler_task(os_task_param_t task_init_data)
 			//printf("SCH: Abs Deadline:0x%x, Current Time:0x%x\n", abs_deadline, current_time.TICKS[0]);
 		}
 
+		/* Calculate Scheduler Overhead*/
+		_time_get_ticks(&current_t);
+		end_time = current_t.TICKS[0];
+		if (end_time > start_time){
+			temp_overhead = end_time - start_time;
+		}
+		overhead += temp_overhead;
+
 		//printf("SCH: Sleeping for %x ticks\n", (unsigned int)timeout);
 
 		/* Block until the next deadline or until a message is received */
 		request_msg = (SCHEDULER_REQUEST_MSG_PTR)_msgq_receive(msg_qid, timeout);
+
+		/* Start time for scheduler in ticks */
+		_time_get_ticks(&current_t);
+		start_time = current_t.TICKS[0];
 
 		/* Message was received. Process Message. */
 		if(request_msg != NULL)
@@ -418,6 +437,21 @@ void scheduler_task(os_task_param_t task_init_data)
 				{
 					response_msg->STATUS = FAILED;
 					response_msg->TASK_LIST = NULL;
+				}
+				break;
+			case(OVERHEAD):
+				printf("Calculating Overhead \n");
+				response_msg->ACK_ID = OVERHEAD_ACK;
+				if(overhead > 0)
+				{
+					response_msg->STATUS = SUCCESSFUL;
+					response_msg->TIMER = overhead;
+					printf("Overhead Sent! \n");
+				}
+				else
+				{
+					response_msg->STATUS = FAILED;
+					response_msg->TIMER = NULL;
 				}
 				break;
 			case(RESET):

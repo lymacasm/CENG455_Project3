@@ -58,6 +58,7 @@ uint32_t idle_counter = 0;
 void monitor_task(os_task_param_t task_init_data)
 {
 	uint32_t check_overdue;
+	uint32_t check_overhead;
 	uint32_t wait_time;
 	uint32_t pros_utilization;
 	struct task_list * list;
@@ -67,8 +68,6 @@ void monitor_task(os_task_param_t task_init_data)
 	uint32_t counter = 0;
 	_mqx_uint min_priority;
 	_mqx_uint old_priority;
-
-	_task_block();
 
 	/* Set yourself to lowest priority */
 	min_priority = _sched_get_min_priority(0);
@@ -83,7 +82,7 @@ void monitor_task(os_task_param_t task_init_data)
 #endif
 
 	// check overdue list every 5 iteration
-	if(counter % 5 == 0){
+	if(idle_counter % 5 == 0){
 		check_overdue = dd_return_overdue_list(&list);
 		if ((check_overdue != 0) && (list != NULL)){
 			printf("Scheduler not performing at Optimal level \n");
@@ -91,9 +90,16 @@ void monitor_task(os_task_param_t task_init_data)
 		}
 	}
 
+	// System overhead
+	check_overhead = dd_return_overhead(schdeuler_overhead);
+	if (check_overhead == 0){
+		printf("Failed to calculate overhead! \n");
+		return;
+	}
+
 	// Absolute time
 	_time_get_ticks(&current_t);
-	total_time = current_t.TICKS[0];		// could use HW_TICKS ?
+	total_time = current_t.TICKS[0];
 
 	// Calculating Processor Utilization
 	wait_time = (100*((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead)))/total_time;

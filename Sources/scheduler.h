@@ -79,6 +79,8 @@ typedef enum scheduler_cmd
 	ACTIVE_LIST_ACK,
 	OVRDUE_LIST,
 	OVRDUE_LIST_ACK,
+	OVERHEAD,
+	OVERHEAD_ACK,
 	RESET,
 	RESET_ACK,
 	FAILURE_ACK,
@@ -109,6 +111,7 @@ typedef struct scheduler_response_msg
 	_task_id				TID;
 	QUEUE_STRUCT_PTR		TASK_LIST;
 	_status_sch				STATUS;
+	time_t					TIMER;
 } SCHEDULER_RESPONSE_MSG, * SCHEDULER_RESPONSE_MSG_PTR;
 
 /*
