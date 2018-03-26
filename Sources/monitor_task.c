@@ -58,7 +58,7 @@ uint32_t idle_counter = 0;
 void monitor_task(os_task_param_t task_init_data)
 {
 	uint32_t check_overdue;
-	uint32_t efficiency;
+	uint32_t wait_time;
 	uint32_t pros_utilization;
 	struct task_list * list;
 	MQX_TICK_STRUCT current_t;
@@ -85,9 +85,9 @@ void monitor_task(os_task_param_t task_init_data)
 	total_time = current_t.TICKS[0];		// could use HW_TICKS ?
 
 	// Calculating Processor Utilization
-	efficiency = ((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead))/total_time;
-	printf("Efficiency = %lX \n",efficiency);  // for debugging purpose
-	pros_utilization = 1 - efficiency;
+	wait_time = ((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead))/total_time;
+	printf("Efficiency = %lX \n",wait_time);  // for debugging purpose
+	pros_utilization = 1 - wait_time;
     printf("Processor Utilization = %lX \n",pros_utilization);
     
 #ifdef PEX_USE_RTOS   
