@@ -64,7 +64,6 @@ void monitor_task(os_task_param_t task_init_data)
 	MQX_TICK_STRUCT current_t;
 	time_t total_time = 0;
 	time_t schdeuler_overhead = 0;		// to be calculated
-	uint32_t counter = 0;
 
   
 #ifdef PEX_USE_RTOS
@@ -72,7 +71,7 @@ void monitor_task(os_task_param_t task_init_data)
 #endif
 
 	// check overdue list every 5 iteration
-	if(counter % 5 == 0){
+	if(idle_counter % 5 == 0){
 		check_overdue = dd_return_overdue_list(&list);
 		if ((check_overdue != 0) && (list != NULL)){
 			printf("Scheduler not performing at Optimal level \n");
