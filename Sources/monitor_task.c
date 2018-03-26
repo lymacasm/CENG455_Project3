@@ -61,9 +61,9 @@ void monitor_task(os_task_param_t task_init_data)
 	uint32_t efficiency;
 	uint32_t pros_utilization;
 	struct task_list * list;
-	MQX_TICK_STRUCT_PTR current_t;
+	MQX_TICK_STRUCT current_t;
 	time_t total_time = 0;
-	time_t schdeuler_overhead;		// to be calculated
+	time_t schdeuler_overhead = 0;		// to be calculated
 	uint32_t counter = 0;
 
   
@@ -81,8 +81,8 @@ void monitor_task(os_task_param_t task_init_data)
 	}
 
 	// Absolute time
-	_time_get_ticks(current_t);
-	total_time = current_t->TICKS[0];		// could use HW_TICKS ?
+	_time_get_ticks(&current_t);
+	total_time = current_t.TICKS[0];		// could use HW_TICKS ?
 
 	// Calculating Processor Utilization
 	efficiency = ((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead))/total_time;
