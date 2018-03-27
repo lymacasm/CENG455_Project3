@@ -40,9 +40,10 @@
 extern "C" {
 #endif 
 
-#define IDLE_TICK_DELAY 10
+#define IDLE_TICK_DELAY 1
+#define MONITOR_TICK_DELAY 300
 
-uint32_t idle_counter = 0;
+volatile uint32_t idle_counter = 0;
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -61,17 +62,17 @@ void monitor_task(os_task_param_t task_init_data)
 	uint32_t check_overhead;
 	uint32_t wait_time;
 	uint32_t pros_utilization;
+	uint32_t counter = 0;
 	struct task_list * list;
 	MQX_TICK_STRUCT current_t;
 	time_t total_time = 0;
 	time_t schdeuler_overhead = 0;		// to be calculated
-	uint32_t counter = 0;
 	_mqx_uint min_priority;
 	_mqx_uint old_priority;
 
 	/* Set yourself to lowest priority */
 	min_priority = _sched_get_min_priority(0);
-	if(_task_set_priority(_task_get_id(), min_priority, &old_priority) != MQX_OK)
+	if(_task_set_priority(_task_get_id(), 2, &old_priority) != MQX_OK)
 	{
 		printf("Failed to set the priority of monitor to lowest (%u)\n", (unsigned int)min_priority);
 		_task_block();
@@ -82,30 +83,41 @@ void monitor_task(os_task_param_t task_init_data)
 #endif
 
 	// check overdue list every 5 iteration
-	if(idle_counter % 5 == 0){
+	if(counter % 10 == 0){
 		check_overdue = dd_return_overdue_list(&list);
 		if ((check_overdue != 0) && (list != NULL)){
-			printf("Scheduler not performing at Optimal level \n");
-			return;
+			printf("Resetting scheduler\n");
+			dd_reset_scheduler();
+			continue;
 		}
 	}
 
 	// System overhead
-	check_overhead = dd_return_overhead(schdeuler_overhead);
-	if (check_overhead == 0){
+	check_overhead = dd_return_overhead(&schdeuler_overhead);
+	if (check_overhead == FALSE){
 		printf("Failed to calculate overhead! \n");
-		return;
+		continue;
 	}
 
 	// Absolute time
-	_time_get_ticks(&current_t);
+	_time_get_elapsed_ticks(&current_t);
 	total_time = current_t.TICKS[0];
 
 	// Calculating Processor Utilization
 	wait_time = (100*((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead)))/total_time;
-	printf("Efficiency = %u \n",wait_time);  // for debugging purpose
 	pros_utilization = 100 - wait_time;
-    printf("Processor Utilization = %u \n",pros_utilization);
+
+	if(counter % 10 == 0)
+	{
+		printf("Idle:%u, Sch:%u, Total:%u\n", idle_counter*IDLE_TICK_DELAY,
+				schdeuler_overhead, total_time);
+		printf("Efficiency = %u \n", (unsigned int)wait_time);  // for debugging purpose
+	    printf("Processor Utilization = %u \n", (unsigned int)pros_utilization);
+	}
+
+	_time_delay_ticks(MONITOR_TICK_DELAY);
+
+	counter++;
     
 #ifdef PEX_USE_RTOS   
   }
@@ -126,8 +138,6 @@ void idle_task(os_task_param_t task_init_data)
   /* Write your local variable definition here */
 	_mqx_uint min_priority;
 	_mqx_uint old_priority;
-
-	_task_block();
 
 	/* Set yourself to second lowest priority */
 	min_priority = _sched_get_min_priority(0);

@@ -101,6 +101,18 @@ void main_task(os_task_param_t task_init_data)
 		 _mqx_exit(0);
 	}
 
+	/* Initialize mutex attributes: */
+	if (_mutatr_init(&mutexattr) != MQX_OK) {
+		printf("Initializing mutex attributes failed.\n");
+		_mqx_exit(0);
+	}
+
+	/* Initialize the mutex: */
+	if (_mutex_init(&overhead_mutex, &mutexattr) != MQX_OK) {
+		printf("Initializing scheduler mutex failed.\n");
+		 _mqx_exit(0);
+	}
+
 	/* Initialization of Processor Expert components (when some RTOS is active). DON'T REMOVE THIS CODE!!! */
 #ifdef MainTask_PEX_RTOS_COMPONENTS_INIT
 	PEX_components_init();

@@ -46,11 +46,11 @@ PERIODIC_TASK task_list[TASK_LIST_SIZE] = {
 		/*
 	   Period, Ex.Time, Deadline, Phase, Execution Cycles
 		 */
-		//{1000, 200,		600,	  0, 		0},
-		//{500,  100,		350, 	  0, 		0},
-		//{100,  20,		70, 	  0, 		0},
-		//{5000, 100, 	150, 	  0, 		0},
-		{500, 60, 	500, 	  0, 		0}
+		{1500,	 500,		1200,	  180, 		0},
+		{2000,   500,		1000, 	  600, 		0},
+		{1000,   200,		700, 	  60, 		0},
+		{500,	 50, 		500, 	  0, 		0},
+		{100, 	 10, 		100, 	  500, 		0}
 };
 
 /*
@@ -88,12 +88,21 @@ void periodic_task_gen(os_task_param_t task_init_data)
 		/* Find the min wait time to the next periodic task creation */
 		for(i = 0; i < TASK_LIST_SIZE; i++)
 		{
-			/* Calculate the wait time for current periodic task */
-			time_t time_to_wait = (current_time.TICKS[0] % task_list[i].period)
+			time_t time_to_wait, release_time;
+
+			release_time = (task_list[i].period * task_list[i].executions)
 					+ task_list[i].phase;
 
-			/* Update min wait time information */
-			if( time_to_wait < min_task_time )
+			if(current_time.TICKS[0] > release_time)
+			{
+				time_to_wait = 0;
+			}
+			else
+			{
+				time_to_wait = release_time - current_time.TICKS[0];
+			}
+
+			if(time_to_wait < min_task_time)
 			{
 				min_task_time = time_to_wait;
 				min_task_idx = i;
@@ -101,10 +110,14 @@ void periodic_task_gen(os_task_param_t task_init_data)
 		}
    
 		/* Delay for min wait time */
-		_time_delay_ticks(min_task_time);
+		if(min_task_time > 0)
+		{
+			_time_delay_ticks(min_task_time);
+		}
     
 		/* Create the periodic task */
-		printf("Creating task\n");
+		//printf("Creating task\n");
+		task_list[min_task_idx].executions++;
 		dd_tcreate(PERIODICTASK_TASK, min_task_idx, task_list[min_task_idx].deadline);
 
 		/* Create monitor task */
@@ -137,7 +150,7 @@ void periodic_task(os_task_param_t task_init_data)
 		_time_get_elapsed_ticks(&now_time);
 		if((now_time.TICKS[0] - start_time.TICKS[0]) > task_list[task_init_data].exec_time)
 		{
-			printf("Deleting self.\n");
+			//printf("Deleting self.\n");
 
 			/* Delete and deschedule myself */
 			dd_delete(_task_get_id());

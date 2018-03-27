@@ -60,6 +60,22 @@ extern "C" {
 _pool_id req_msg_pool;
 _pool_id rsp_msg_pool;
 
+static void queue_print(QUEUE_STRUCT_PTR list)
+{
+	SCH_TASK_NODE_PTR list_itr;
+
+	list_itr = (SCH_TASK_NODE_PTR)_queue_head(list);
+	while(list_itr != NULL)
+	{
+		printf("{TID:%x,DEADLINE:%u,CREATION:%u,PRIORITY:%u}\n",
+				(unsigned int)list_itr->TID,
+				(unsigned int)list_itr->ABS_DEADLINE,
+				(unsigned int)list_itr->CREATION_TIME,
+				(unsigned int)list_itr->TASK_PRIORITY);
+
+		list_itr = (SCH_TASK_NODE_PTR)_queue_next(list, (QUEUE_ELEMENT_STRUCT_PTR)list_itr);
+	}
+}
 
 /* Inserts the task into a sorted queue, in O(N) runtime */
 static void queue_insert_task(QUEUE_STRUCT_PTR list, SCH_TASK_NODE_PTR task)
@@ -287,6 +303,9 @@ void scheduler_task(os_task_param_t task_init_data)
 		_task_block();
 	}
 
+	_time_get_ticks(&current_t);
+	start_time = current_t.HW_TICKS;
+
 #ifdef PEX_USE_RTOS
 	while (1) {
 #endif
@@ -313,11 +332,9 @@ void scheduler_task(os_task_param_t task_init_data)
 		}
 
 		/* Calculate Scheduler Overhead*/
-		_time_get_ticks(&current_t);
-		end_time = current_t.TICKS[0];
-		if (end_time > start_time){
-			temp_overhead = end_time - start_time;
-		}
+		_time_get_elapsed_ticks(&current_t);
+		end_time = current_t.HW_TICKS;
+		temp_overhead = end_time - start_time;
 		overhead += temp_overhead;
 
 		//printf("SCH: Sleeping for %x ticks\n", (unsigned int)timeout);
@@ -326,8 +343,8 @@ void scheduler_task(os_task_param_t task_init_data)
 		request_msg = (SCHEDULER_REQUEST_MSG_PTR)_msgq_receive(msg_qid, timeout);
 
 		/* Start time for scheduler in ticks */
-		_time_get_ticks(&current_t);
-		start_time = current_t.TICKS[0];
+		_time_get_elapsed_ticks(&current_t);
+		start_time = current_t.HW_TICKS;
 
 		/* Message was received. Process Message. */
 		if(request_msg != NULL)
@@ -357,7 +374,7 @@ void scheduler_task(os_task_param_t task_init_data)
 				new_task = (SCH_TASK_NODE_PTR)_partition_alloc(task_list_pid);
 				if(_task_get_error() != MQX_OK){
 					printf("Failed to allocate scheduler task memory from partition.\n");
-					printf("Error code: %x\n", _task_get_error());
+					printf("Error code: %x\n", (unsigned int)_task_get_error());
 					_task_set_error(MQX_OK);
 					continue;
 				}
@@ -383,6 +400,8 @@ void scheduler_task(os_task_param_t task_init_data)
 
 				_partition_free(request_msg->TASK_INFO);
 				//printf("SCH: Created task %x!\n", (unsigned int)new_task_tid);
+
+				//queue_print(&active_list);
 				break;
 
 			/* Delete a task */
@@ -440,23 +459,26 @@ void scheduler_task(os_task_param_t task_init_data)
 				}
 				break;
 			case(OVERHEAD):
-				printf("Calculating Overhead \n");
 				response_msg->ACK_ID = OVERHEAD_ACK;
 				if(overhead > 0)
 				{
 					response_msg->STATUS = SUCCESSFUL;
-					response_msg->TIMER = overhead;
-					printf("Overhead Sent! \n");
+					response_msg->TIMER = overhead / _time_get_hwticks_per_tick();
 				}
 				else
 				{
 					response_msg->STATUS = FAILED;
-					response_msg->TIMER = NULL;
+					response_msg->TIMER = 0;
 				}
 				break;
 			case(RESET):
 				//printf("SCH: Resetting the scheduler\n");
 				response_msg->ACK_ID = RESET_ACK;
+
+				printf("SCH:Active List:\n");
+				queue_print(&active_list);
+				printf("SCH:Overdue List:\n");
+				queue_print(&overdue_list);
 
 				/* Remove all elements from active queue, and terminate all associated tasks */
 				queue_remove_all(&active_list, TRUE);
