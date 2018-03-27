@@ -8,7 +8,7 @@
 **     Repository  : KSDK 1.3.0
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-24, 18:35, # CodeGen: 14
+**     Date/Time   : 2018-03-26, 19:13, # CodeGen: 17
 **     Abstract    :
 **
 **     Settings    :
@@ -73,6 +73,7 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 
 
 #ifdef __cplusplus
@@ -131,6 +132,10 @@ void Components_Init(void)
   /*! IdleTask Auto initialization start */ 
   (void)IdleTask_Init();
   /*! IdleTask Auto initialization end */                       
+  /*! gpio1 Auto initialization start */
+  GPIO_DRV_Init(gpio1_InpConfig0,gpio1_OutConfig0);
+  /*! gpio1 Auto initialization end */
+  
 }
 #endif /* CPU_COMPONENTS_INIT */
 

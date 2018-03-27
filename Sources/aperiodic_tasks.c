@@ -1,31 +1,32 @@
 /* ###################################################################
-**     Filename    : monitor_task.c
+**     Filename    : aperiodic_tasks.c
 **     Project     : serial_handler
 **     Processor   : MK64FN1M0VLL12
 **     Component   : Events
 **     Version     : Driver 01.00
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-24, 16:50, # CodeGen: 12
+**     Date/Time   : 2018-03-26, 18:35, # CodeGen: 16
 **     Abstract    :
 **         This is user's event module.
 **         Put your event handler code here.
 **     Settings    :
 **     Contents    :
-**         monitor_task - void monitor_task(os_task_param_t task_init_data);
+**         switch2_task - void switch2_task(os_task_param_t task_init_data);
+**         switch3_task - void switch3_task(os_task_param_t task_init_data);
 **
 ** ###################################################################*/
 /*!
-** @file monitor_task.c
+** @file aperiodic_tasks.c
 ** @version 01.00
 ** @brief
 **         This is user's event module.
 **         Put your event handler code here.
 */         
 /*!
-**  @addtogroup monitor_task_module monitor_task module documentation
+**  @addtogroup aperiodic_tasks_module aperiodic_tasks module documentation
 **  @{
 */         
-/* MODULE monitor_task */
+/* MODULE aperiodic_tasks */
 
 #include "Cpu.h"
 #include "Events.h"
@@ -41,62 +42,39 @@
 extern "C" {
 #endif 
 
-#define IDLE_TICK_DELAY 10
-
-uint32_t idle_counter = 0;
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
 /*
 ** ===================================================================
-**     Callback    : monitor_task
+**     Callback    : switch2_task
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void monitor_task(os_task_param_t task_init_data)
+void switch2_task(os_task_param_t task_init_data)
 {
-	uint32_t check_overdue;
-	uint32_t check_overhead;
-	uint32_t wait_time;
-	uint32_t pros_utilization;
-	struct task_list * list;
-	MQX_TICK_STRUCT current_t;
-	time_t total_time = 0;
-	time_t schdeuler_overhead;
-
+  /* Write your local variable definition here */
   
 #ifdef PEX_USE_RTOS
+
+	// turn led on/off
+	printf("APeriodic Task created! \n");
+
+	dd_delete(_task_get_id());
+	_task_block();
+
   while (1) {
 #endif
-
-	// check overdue list every 5 iteration
-	if(idle_counter % 5 == 0){
-		check_overdue = dd_return_overdue_list(&list);
-		if ((check_overdue != 0) && (list != NULL)){
-			printf("Scheduler not performing at Optimal level \n");
-			return;
-		}
-	}
-
-	// System overhead
-	check_overhead = dd_return_overhead(schdeuler_overhead);
-	if (check_overhead == 0){
-		printf("Failed to calculate overhead! \n");
-		return;
-	}
-
-	// Absolute time
-	_time_get_ticks(&current_t);
-	total_time = current_t.TICKS[0];
-
-	// Calculating Processor Utilization
-	wait_time = ((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead))/total_time;
-	printf("Efficiency = %lX \n",wait_time);  // for debugging purpose
-	pros_utilization = 1 - wait_time;
-    printf("Processor Utilization = %lX \n",pros_utilization);
+    /* Write your code here ... */
+    
+    
+    OSA_TimeDelay(10);                 /* Example code (for task release) */
+   
+    
+    
     
 #ifdef PEX_USE_RTOS   
   }
@@ -105,14 +83,14 @@ void monitor_task(os_task_param_t task_init_data)
 
 /*
 ** ===================================================================
-**     Callback    : idle_task
+**     Callback    : switch3_task
 **     Description : Task function entry.
 **     Parameters  :
 **       task_init_data - OS task parameter
 **     Returns : Nothing
 ** ===================================================================
 */
-void idle_task(os_task_param_t task_init_data)
+void switch3_task(os_task_param_t task_init_data)
 {
   /* Write your local variable definition here */
   
@@ -122,16 +100,17 @@ void idle_task(os_task_param_t task_init_data)
     /* Write your code here ... */
     
     
-    _time_delay_ticks(IDLE_TICK_DELAY);
-    idle_counter++;
+    OSA_TimeDelay(10);                 /* Example code (for task release) */
    
+    
+    
     
 #ifdef PEX_USE_RTOS   
   }
 #endif    
 }
 
-/* END monitor_task */
+/* END aperiodic_tasks */
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -35,6 +35,7 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 #include <stdio.h>
 
 #ifdef __cplusplus
@@ -43,6 +44,9 @@ extern "C" {
 
 /* queue id */
 #define RX_QUEUE_SENDING 3
+
+#define SW2_APERIODIC_DEADLINE 1000
+#define SW3_APERIODIC_DEADLINE 800
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
 
@@ -111,6 +115,44 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 		_task_set_error(MQX_OK);
 		return;
 	}
+}
+
+/*
+** ===================================================================
+**     Interrupt handler : gpio1_PORTA_IRQHandler
+**
+**     Description :
+**         User interrupt service routine. 
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void gpio1_PORTA_IRQHandler(void)
+{
+  /* Clear interrupt flag.*/
+  PORT_HAL_ClearPortIntFlag(PORTA_BASE_PTR);
+
+  dd_tcreate(SW3TASK_TASK, 0,SW3_APERIODIC_DEADLINE);
+
+
+  /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Interrupt handler : gpio1_PORTC_IRQHandler
+**
+**     Description :
+**         User interrupt service routine. 
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void gpio1_PORTC_IRQHandler(void)
+{
+  /* Clear interrupt flag.*/
+  PORT_HAL_ClearPortIntFlag(PORTC_BASE_PTR);
+  /* Write your code here ... */
 }
 
 /* END Events */
