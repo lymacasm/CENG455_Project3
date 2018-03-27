@@ -35,6 +35,7 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 #include <stdio.h>
 #include <ctype.h>
 

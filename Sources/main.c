@@ -36,6 +36,7 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 #include "clockMan1.h"
 #include "pin_init.h"
 #include "osa1.h"
@@ -52,6 +53,9 @@
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
 #include "IdleTask.h"
+#include "gpio1.h"
+#include "SW3Task.h"
+#include "SW2Task.h"
 #if CPU_INIT_CONFIG
   #include "Init_Config.h"
 #endif

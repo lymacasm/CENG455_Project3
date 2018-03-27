@@ -47,6 +47,9 @@
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
 #include "IdleTask.h"
+#include "gpio1.h"
+#include "SW3Task.h"
+#include "SW2Task.h"
 
 #ifdef __cplusplus
 extern "C" {
