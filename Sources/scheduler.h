@@ -47,6 +47,10 @@
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
 #include "IdleTask.h"
+#include "gpio1.h"
+#include "Switch2Task.h"
+#include "Switch3Task.h"
+#include "AperiodicTaskGen.h"
 
 #include "dd_task_interface.h"
 #include <message.h>

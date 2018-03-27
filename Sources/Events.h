@@ -47,6 +47,10 @@
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
 #include "IdleTask.h"
+#include "gpio1.h"
+#include "Switch2Task.h"
+#include "Switch3Task.h"
+#include "AperiodicTaskGen.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,6 +69,30 @@ extern "C" {
 ** ===================================================================
 */
 void myUART_RxCallback(uint32_t instance, void * uartState);
+
+/*
+** ===================================================================
+**     Interrupt handler : gpio1_PORTC_IRQHandler
+**
+**     Description :
+**         User interrupt service routine. 
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void gpio1_PORTC_IRQHandler(void);
+
+/*
+** ===================================================================
+**     Interrupt handler : gpio1_PORTA_IRQHandler
+**
+**     Description :
+**         User interrupt service routine. 
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void gpio1_PORTA_IRQHandler(void);
 
 /* END Events */
 

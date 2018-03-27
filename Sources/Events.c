@@ -35,7 +35,9 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 #include <stdio.h>
+#include <event.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -111,6 +113,66 @@ void myUART_RxCallback(uint32_t instance, void * uartState)
 		_task_set_error(MQX_OK);
 		return;
 	}
+}
+
+/*
+** ===================================================================
+**     Interrupt handler : gpio1_PORTC_IRQHandler
+**
+**     Description :
+**         User interrupt service routine. 
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void gpio1_PORTC_IRQHandler(void)
+{
+  /* Clear interrupt flag.*/
+  PORT_HAL_ClearPortIntFlag(PORTC_BASE_PTR);
+  /* Write your code here ... */
+  void* event_ptr;
+
+  /* Open event */
+  if(_event_open("aperiodic", &event_ptr) != MQX_OK)
+  {
+	  return;
+  }
+
+  /* Set event bit */
+  _event_set(event_ptr, 0x01);
+
+  /* Close event */
+  _event_close(event_ptr);
+}
+
+/*
+** ===================================================================
+**     Interrupt handler : gpio1_PORTA_IRQHandler
+**
+**     Description :
+**         User interrupt service routine. 
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void gpio1_PORTA_IRQHandler(void)
+{
+  /* Clear interrupt flag.*/
+  PORT_HAL_ClearPortIntFlag(PORTA_BASE_PTR);
+  /* Write your code here ... */
+  void* event_ptr;
+
+  /* Open event */
+  if(_event_open("aperiodic", &event_ptr) != MQX_OK)
+  {
+	  return;
+  }
+
+  /* Set event bit */
+  _event_set(event_ptr, 0x02);
+
+  /* Close event */
+  _event_close(event_ptr);
 }
 
 /* END Events */
