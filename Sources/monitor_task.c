@@ -67,6 +67,7 @@ void monitor_task(os_task_param_t task_init_data)
 	MQX_TICK_STRUCT current_t;
 	time_t total_time = 0;
 	time_t schdeuler_overhead = 0;		// to be calculated
+	uint32_t overhead = 0;
 	_mqx_uint min_priority;
 	_mqx_uint old_priority;
 
@@ -106,13 +107,14 @@ void monitor_task(os_task_param_t task_init_data)
 	// Calculating Processor Utilization
 	wait_time = (100*((idle_counter*IDLE_TICK_DELAY)+(schdeuler_overhead)))/total_time;
 	pros_utilization = 100 - wait_time;
+	overhead = (100000 * schdeuler_overhead) / total_time;
 
 	if(counter % 10 == 0)
 	{
 		printf("Idle:%u, Sch:%u, Total:%u\n", idle_counter*IDLE_TICK_DELAY,
 				schdeuler_overhead, total_time);
-		printf("Efficiency = %u \n", (unsigned int)wait_time);  // for debugging purpose
-	    printf("Processor Utilization = %u \n", (unsigned int)pros_utilization);
+		printf("Scheduler Overhead = %ux10^-3%%\n", (unsigned int)overhead);
+	    printf("Processor Utilization = %u%%\n", (unsigned int)pros_utilization);
 	}
 
 	_time_delay_ticks(MONITOR_TICK_DELAY);
