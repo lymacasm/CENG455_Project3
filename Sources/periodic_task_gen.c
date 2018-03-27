@@ -40,8 +40,9 @@
 extern "C" {
 #endif 
 
-#define TASK_LIST_SIZE 5
+#define LOOPS_PER_TICK 42808
 
+#define TASK_LIST_SIZE 5
 PERIODIC_TASK task_list[TASK_LIST_SIZE] = {
 		/*
 	   Period, Ex.Time, Deadline, Phase, Execution Cycles
@@ -138,13 +139,13 @@ void periodic_task_gen(os_task_param_t task_init_data)
 void periodic_task(os_task_param_t task_init_data)
 {
 	MQX_TICK_STRUCT start_time;
-
+	uint32_t i, exec_time;
 	/* Get the current time */
 	_time_get_elapsed_ticks(&start_time);
 
 
 	/* Delay for execution time */
-	while(1)
+	/*while(1)
 	{
 		MQX_TICK_STRUCT now_time;
 		_time_get_elapsed_ticks(&now_time);
@@ -153,12 +154,17 @@ void periodic_task(os_task_param_t task_init_data)
 			//printf("Deleting self.\n");
 
 			/* Delete and deschedule myself */
-			dd_delete(_task_get_id());
+			//dd_delete(_task_get_id());
 
 			/* Shouldn't reach here */
-			_task_block();
+			/*_task_block();
 		}
-	}
+	}*/
+	exec_time = task_list[task_init_data].exec_time;
+	for(i = 0; i < exec_time * LOOPS_PER_TICK; i++);
+	printf("Deadline met for %x!\n", _task_get_id());
+	dd_delete(_task_get_id());
+	_task_block();
 }
 
 /* END periodic_task_gen */

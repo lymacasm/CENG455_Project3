@@ -258,6 +258,21 @@ void scheduler_task(os_task_param_t task_init_data)
 
 	printf("\n\nScheduler created!\n\n");
 
+	/*do
+	{
+		_time_get_elapsed_ticks(&current_t);
+	} while(current_t.TICKS[0] == 0);
+
+	int a = 100000;
+
+	_time_get_elapsed_ticks(&current_t);
+	start_time = current_t.TICKS[0];
+	int i;
+	for(i = 0; i < a*1000; i++);
+	_time_get_elapsed_ticks(&current_t);
+	end_time = current_t.TICKS[0];
+	printf("It took %u ticks to go through %u iterations\n", end_time - start_time, a*1000);
+*/
 	/* Initialize queues */
 	_queue_init(&active_list, 0);
 	_queue_init(&overdue_list, 0);
