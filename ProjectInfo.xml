@@ -76,11 +76,9 @@
       <Path>C:\Users\lymacasm\CENG455_Project3\Generated_Code\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\MK64F12\startup\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\</Path>
-      <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\gpio\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\mpu\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\rtc\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\uart\</Path>
-      <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\gpio\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\mcg\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\mpu\</Path>
       <Path>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\osc\</Path>
@@ -120,14 +118,11 @@
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\MonitorTask.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\PeriodicTask.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\PeriodicTaskGen.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SW2Task.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SW3Task.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SchedulerTask.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\UserTask.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\clockMan1.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\fsl_hwtimer1.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\fsl_mpu1.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\gpio1.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\handlerTask.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\hardware_init.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\mqx_ksdk.c</PathName>
@@ -137,14 +132,11 @@
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\uart1.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\MK64F12\startup\system_MK64F12.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\startup.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\gpio\fsl_gpio_common.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\gpio\fsl_gpio_driver.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\mpu\fsl_mpu_common.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\mpu\fsl_mpu_driver.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\rtc\fsl_rtc_common.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\uart\fsl_uart_common.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\src\uart\fsl_uart_driver.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\gpio\fsl_gpio_hal.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\mcg\fsl_mcg_hal.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\mcg\fsl_mcg_hal_modes.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\src\mpu\fsl_mpu_hal.c</PathName>
@@ -267,7 +259,6 @@
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\rtos\mqx\mqx_stdlib\source\stdio\stdio.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\rtos\mqx\mqx_stdlib\source\strings\strings.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\Events.c</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\aperiodic_tasks.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\dd_task_interface.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\main.c</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\monitor_task.c</PathName>
@@ -290,15 +281,12 @@
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SDK\platform\devices\MK64F12\startup\system_MK64F12.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SDK\rtos\mqx\config\board\user_config.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SDK\rtos\mqx\config\mcu\mqx_sdk_config.h</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SW2Task.h</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SW3Task.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\SchedulerTask.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\UserTask.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\board.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\clockMan1.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\fsl_hwtimer1.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\fsl_mpu1.h</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\gpio1.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\handlerTask.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\mqx_ksdk.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Generated_Code\myUART.h</PathName>
@@ -318,10 +306,8 @@
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\MK64F12\include\fsl_bitaccess.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\fsl_device_registers.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\devices\startup.h</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\inc\fsl_gpio_driver.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\inc\fsl_mpu_driver.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\drivers\inc\fsl_uart_driver.h</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\inc\fsl_gpio_hal.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\inc\fsl_mcg_hal.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\inc\fsl_mcg_hal_modes.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\platform\hal\inc\fsl_mpu_hal.h</PathName>
@@ -434,7 +420,6 @@
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\rtos\mqx\mqx_stdlib\source\stdio\print_prv.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\SDK\rtos\mqx\mqx_stdlib\source\stdio\scan_prv.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\Events.h</PathName>
-      <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\aperiodic_tasks.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\dd_task_interface.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\monitor_task.h</PathName>
       <PathName>C:\Users\lymacasm\CENG455_Project3\Sources\os_tasks.h</PathName>
