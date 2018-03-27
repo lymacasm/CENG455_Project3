@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-24, 17:22, # CodeGen: 13
+**     Date/Time   : 2018-03-26, 20:06, # CodeGen: 21
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -61,6 +61,7 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 #include "MainTask.h"
 #include "handlerTask.h"
 #include "UserTask.h"
@@ -69,6 +70,9 @@
 #include "PeriodicTask.h"
 #include "MonitorTask.h"
 #include "IdleTask.h"
+#include "Switch2Task.h"
+#include "Switch3Task.h"
+#include "AperiodicTaskGen.h"
 extern void * kernel_data_prv;
 #if MQXCFG_PREALLOCATED_SYSTEM_STACKS
 extern uint8_t mqx_interrupt_stack[];
@@ -165,6 +169,39 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Stack size                     */  IDLETASK_TASK_STACK_SIZE,
     /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(IDLETASK_TASK_PRIORITY)),
     /* Task name                      */  IDLETASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: Switch2Task */
+  {
+    /* Task number                    */  SWITCH2TASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)switch2_task,
+    /* Stack size                     */  SWITCH2TASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(SWITCH2TASK_TASK_PRIORITY)),
+    /* Task name                      */  SWITCH2TASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: Switch3Task */
+  {
+    /* Task number                    */  SWITCH3TASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)switch3_task,
+    /* Stack size                     */  SWITCH3TASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(SWITCH3TASK_TASK_PRIORITY)),
+    /* Task name                      */  SWITCH3TASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: AperiodicTaskGen */
+  {
+    /* Task number                    */  APERIODICTASKGEN_TASK,
+    /* Entry point                    */  (TASK_FPTR)aperiodic_task_gen,
+    /* Stack size                     */  APERIODICTASKGEN_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(APERIODICTASKGEN_TASK_PRIORITY)),
+    /* Task name                      */  APERIODICTASKGEN_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)

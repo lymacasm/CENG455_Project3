@@ -35,13 +35,14 @@
 #include "scheduler.h"
 #include "periodic_task_gen.h"
 #include "monitor_task.h"
+#include "aperiodic_tasks.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif 
 
 #define IDLE_TICK_DELAY 1
-#define MONITOR_TICK_DELAY 300
+#define MONITOR_TICK_DELAY 500
 
 volatile uint32_t idle_counter = 0;
 
