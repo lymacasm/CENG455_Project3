@@ -41,19 +41,17 @@
 extern "C" {
 #endif 
 
-#define LOOPS_PER_TICK 42808
+#define LOOPS_PER_TICK 40133
 
-#define TASK_LIST_SIZE 5
+#define TASK_LIST_SIZE 3
 
 PERIODIC_TASK task_list[TASK_LIST_SIZE] = {
 		/*
 	   Period, Ex.Time, Deadline, Phase, Execution Cycles
 		 */
-		{1500,	 300,		1200,	  180, 		0},
-		{2000,   200,		1500, 	  600, 		0},
-		{1000,   200,		800, 	  60, 		0},
-		{500,	 50, 		500, 	  0, 		0},
-		{600, 	 10, 		200, 	  500, 		0}
+		{1000,	 300,		800,	  0, 		0},
+		{1000,   350,		1000, 	  0, 		0},
+		{300,    50,		300, 	  0, 		0}
 };
 
 /*
@@ -78,6 +76,11 @@ void periodic_task_gen(os_task_param_t task_init_data)
 {
 	/* Write your local variable definition here */
 	MQX_TICK_STRUCT current_time;
+
+	do
+	{
+		_time_get_elapsed_ticks(&current_time);
+	} while(current_time.TICKS[0] == 0);
   
 #ifdef PEX_USE_RTOS
 	while (1) {
@@ -140,42 +143,15 @@ void periodic_task_gen(os_task_param_t task_init_data)
 */
 void periodic_task(os_task_param_t task_init_data)
 {
-	MQX_TICK_STRUCT start_time;
 	uint32_t priority, i;
 	time_t exec_time;
 
 	exec_time = task_list[task_init_data].exec_time;
 	for(i = 0; i < exec_time * LOOPS_PER_TICK; i++);
-	printf("Deadline met for %x!\n", _task_get_id());
+	//printf("Deadline met for %x!\n", _task_get_id());
 	dd_delete(_task_get_id());
 	_task_block();
 
-	/* Get the current time */
-	//_time_get_elapsed_ticks(&start_time);
-
-
-
-	//i = -1;
-	/* Delay for execution time */
-	/*while(1)
-	{
-		MQX_TICK_STRUCT now_time;
-		_time_get_elapsed_ticks(&now_time);
-		//_task_get_priority(_task_get_id(), &priority);
-		i++;
-		if(i % 100000 == 0)
-			printf("Task ID %x running\n", _task_get_id());
-		if((now_time.TICKS[0] - start_time.TICKS[0]) > task_list[task_init_data].exec_time)
-		{
-			//printf("Deleting self.\n");
-
-			/* Delete and deschedule myself */
-			//dd_delete(_task_get_id());
-
-			/* Shouldn't reach here */
-			/*_task_block();
-		}
-	}*/
 }
 
 /* END periodic_task_gen */

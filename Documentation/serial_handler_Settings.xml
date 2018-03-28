@@ -207,19 +207,6 @@
       <EmptySection_DummyValue />
     </Events>
   </Bean>
-  <Bean name="UserTask" type="OS_Task">
-    <Enabled v="Y" />
-    <Properties>
-      <Name v="UserTask" />
-      <Component_version v="1.3.0" />
-    </Properties>
-    <Methods>
-      <EmptySection_DummyValue />
-    </Methods>
-    <Events>
-      <EmptySection_DummyValue />
-    </Events>
-  </Bean>
   <Bean name="SchedulerTask" type="OS_Task">
     <Enabled v="Y" />
     <Properties>
@@ -233,62 +220,10 @@
       <EmptySection_DummyValue />
     </Events>
   </Bean>
-  <Bean name="PeriodicTaskGen" type="OS_Task">
+  <Bean name="UserTask" type="OS_Task">
     <Enabled v="Y" />
     <Properties>
-      <Name v="PeriodicTaskGen" />
-      <Component_version v="1.3.0" />
-    </Properties>
-    <Methods>
-      <EmptySection_DummyValue />
-    </Methods>
-    <Events>
-      <EmptySection_DummyValue />
-    </Events>
-  </Bean>
-  <Bean name="PeriodicTask" type="OS_Task">
-    <Enabled v="Y" />
-    <Properties>
-      <Name v="PeriodicTask" />
-      <Component_version v="1.3.0" />
-    </Properties>
-    <Methods>
-      <EmptySection_DummyValue />
-    </Methods>
-    <Events>
-      <EmptySection_DummyValue />
-    </Events>
-  </Bean>
-  <Bean name="MonitorTask" type="OS_Task">
-    <Enabled v="Y" />
-    <Properties>
-      <Name v="MonitorTask" />
-      <Component_version v="1.3.0" />
-    </Properties>
-    <Methods>
-      <EmptySection_DummyValue />
-    </Methods>
-    <Events>
-      <EmptySection_DummyValue />
-    </Events>
-  </Bean>
-  <Bean name="IdleTask" type="OS_Task">
-    <Enabled v="Y" />
-    <Properties>
-      <Name v="IdleTask" />
-      <Component_version v="1.3.0" />
-    </Properties>
-    <Methods>
-      <EmptySection_DummyValue />
-    </Methods>
-    <Events>
-      <EmptySection_DummyValue />
-    </Events>
-  </Bean>
-  <Bean name="gpio1" type="fsl_gpio">
-    <Enabled v="Y" />
-    <Properties>
-      <Component_name v="gpio1" />
+      <Name v="UserTask" />
       <Component_version v="1.3.0" />
     </Properties>
     <Methods>
@@ -324,10 +259,75 @@
       <EmptySection_DummyValue />
     </Events>
   </Bean>
+  <Bean name="MonitorTask" type="OS_Task">
+    <Enabled v="Y" />
+    <Properties>
+      <Name v="MonitorTask" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="PeriodicTask" type="OS_Task">
+    <Enabled v="Y" />
+    <Properties>
+      <Name v="PeriodicTask" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="IdleTask" type="OS_Task">
+    <Enabled v="Y" />
+    <Properties>
+      <Name v="IdleTask" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="gpio1" type="fsl_gpio">
+    <Enabled v="Y" />
+    <Properties>
+      <Component_name v="gpio1" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
   <Bean name="AperiodicTaskGen" type="OS_Task">
     <Enabled v="Y" />
     <Properties>
       <Name v="AperiodicTaskGen" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="PeriodicTaskGen" type="OS_Task">
+    <Enabled v="Y" />
+    <Properties>
+      <Name v="PeriodicTaskGen" />
       <Component_version v="1.3.0" />
     </Properties>
     <Methods>

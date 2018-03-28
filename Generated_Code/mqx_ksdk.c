@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-26, 20:06, # CodeGen: 21
+**     Date/Time   : 2018-03-27, 17:59, # CodeGen: 27
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -57,22 +57,22 @@
 /* Application specific header file */
 #include "rtos_main_task.h"
 #include "os_tasks.h"
-#include "user_task.h"
 #include "scheduler.h"
-#include "periodic_task_gen.h"
-#include "monitor_task.h"
+#include "user_task.h"
 #include "aperiodic_tasks.h"
+#include "monitor_task.h"
+#include "periodic_task_gen.h"
 #include "MainTask.h"
 #include "handlerTask.h"
-#include "UserTask.h"
 #include "SchedulerTask.h"
-#include "PeriodicTaskGen.h"
-#include "PeriodicTask.h"
-#include "MonitorTask.h"
-#include "IdleTask.h"
+#include "UserTask.h"
 #include "Switch2Task.h"
 #include "Switch3Task.h"
+#include "MonitorTask.h"
+#include "PeriodicTask.h"
+#include "IdleTask.h"
 #include "AperiodicTaskGen.h"
+#include "PeriodicTaskGen.h"
 extern void * kernel_data_prv;
 #if MQXCFG_PREALLOCATED_SYSTEM_STACKS
 extern uint8_t mqx_interrupt_stack[];
@@ -107,17 +107,6 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)
   },       
-  /* Task: UserTask */
-  {
-    /* Task number                    */  USERTASK_TASK,
-    /* Entry point                    */  (TASK_FPTR)user_task,
-    /* Stack size                     */  USERTASK_TASK_STACK_SIZE,
-    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(USERTASK_TASK_PRIORITY)),
-    /* Task name                      */  USERTASK_TASK_NAME,
-    /* Task attributes                */  (0),
-    /* Task parameter                 */  (uint32_t)(NULL),
-    /* Task time slice                */  (uint32_t)(0U)
-  },       
   /* Task: SchedulerTask */
   {
     /* Task number                    */  SCHEDULERTASK_TASK,
@@ -129,46 +118,13 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)
   },       
-  /* Task: PeriodicTaskGen */
+  /* Task: UserTask */
   {
-    /* Task number                    */  PERIODICTASKGEN_TASK,
-    /* Entry point                    */  (TASK_FPTR)periodic_task_gen,
-    /* Stack size                     */  PERIODICTASKGEN_TASK_STACK_SIZE,
-    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PERIODICTASKGEN_TASK_PRIORITY)),
-    /* Task name                      */  PERIODICTASKGEN_TASK_NAME,
-    /* Task attributes                */  (0),
-    /* Task parameter                 */  (uint32_t)(NULL),
-    /* Task time slice                */  (uint32_t)(0U)
-  },       
-  /* Task: PeriodicTask */
-  {
-    /* Task number                    */  PERIODICTASK_TASK,
-    /* Entry point                    */  (TASK_FPTR)periodic_task,
-    /* Stack size                     */  PERIODICTASK_TASK_STACK_SIZE,
-    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PERIODICTASK_TASK_PRIORITY)),
-    /* Task name                      */  PERIODICTASK_TASK_NAME,
-    /* Task attributes                */  (0),
-    /* Task parameter                 */  (uint32_t)(NULL),
-    /* Task time slice                */  (uint32_t)(0U)
-  },       
-  /* Task: MonitorTask */
-  {
-    /* Task number                    */  MONITORTASK_TASK,
-    /* Entry point                    */  (TASK_FPTR)monitor_task,
-    /* Stack size                     */  MONITORTASK_TASK_STACK_SIZE,
-    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(MONITORTASK_TASK_PRIORITY)),
-    /* Task name                      */  MONITORTASK_TASK_NAME,
-    /* Task attributes                */  (0),
-    /* Task parameter                 */  (uint32_t)(NULL),
-    /* Task time slice                */  (uint32_t)(0U)
-  },       
-  /* Task: IdleTask */
-  {
-    /* Task number                    */  IDLETASK_TASK,
-    /* Entry point                    */  (TASK_FPTR)idle_task,
-    /* Stack size                     */  IDLETASK_TASK_STACK_SIZE,
-    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(IDLETASK_TASK_PRIORITY)),
-    /* Task name                      */  IDLETASK_TASK_NAME,
+    /* Task number                    */  USERTASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)user_task,
+    /* Stack size                     */  USERTASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(USERTASK_TASK_PRIORITY)),
+    /* Task name                      */  USERTASK_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)
@@ -195,6 +151,39 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)
   },       
+  /* Task: MonitorTask */
+  {
+    /* Task number                    */  MONITORTASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)monitor_task,
+    /* Stack size                     */  MONITORTASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(MONITORTASK_TASK_PRIORITY)),
+    /* Task name                      */  MONITORTASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: PeriodicTask */
+  {
+    /* Task number                    */  PERIODICTASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)periodic_task,
+    /* Stack size                     */  PERIODICTASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PERIODICTASK_TASK_PRIORITY)),
+    /* Task name                      */  PERIODICTASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: IdleTask */
+  {
+    /* Task number                    */  IDLETASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)idle_task,
+    /* Stack size                     */  IDLETASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(IDLETASK_TASK_PRIORITY)),
+    /* Task name                      */  IDLETASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
   /* Task: AperiodicTaskGen */
   {
     /* Task number                    */  APERIODICTASKGEN_TASK,
@@ -202,6 +191,17 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Stack size                     */  APERIODICTASKGEN_TASK_STACK_SIZE,
     /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(APERIODICTASKGEN_TASK_PRIORITY)),
     /* Task name                      */  APERIODICTASKGEN_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: PeriodicTaskGen */
+  {
+    /* Task number                    */  PERIODICTASKGEN_TASK,
+    /* Entry point                    */  (TASK_FPTR)periodic_task_gen,
+    /* Stack size                     */  PERIODICTASKGEN_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PERIODICTASKGEN_TASK_PRIORITY)),
+    /* Task name                      */  PERIODICTASKGEN_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)

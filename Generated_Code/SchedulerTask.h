@@ -7,7 +7,7 @@
 **     Version     : Component 1.3.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-26, 19:50, # CodeGen: 17
+**     Date/Time   : 2018-03-27, 17:41, # CodeGen: 25
 **     Contents    :
 **         Init - osa_status_t SchedulerTask_Init(void);
 **
@@ -66,7 +66,7 @@
 /* SchedulerTask task stack size */  
 #define SCHEDULERTASK_TASK_STACK_SIZE  1024U
 /* SchedulerTask task priority value */  
-#define SCHEDULERTASK_TASK_PRIORITY    0U
+#define SCHEDULERTASK_TASK_PRIORITY    1U
 /*
 ** ===================================================================
 **     Method      :  Init (component OS_Task)

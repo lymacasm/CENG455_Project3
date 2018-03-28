@@ -8,7 +8,7 @@
 **     Repository  : KSDK 1.3.0
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-26, 20:28, # CodeGen: 22
+**     Date/Time   : 2018-03-27, 17:59, # CodeGen: 27
 **     Abstract    :
 **
 **     Settings    :
@@ -69,11 +69,11 @@
 #include "Events.h"
 #include "rtos_main_task.h"
 #include "os_tasks.h"
-#include "user_task.h"
 #include "scheduler.h"
-#include "periodic_task_gen.h"
-#include "monitor_task.h"
+#include "user_task.h"
 #include "aperiodic_tasks.h"
+#include "monitor_task.h"
+#include "periodic_task_gen.h"
 
 
 #ifdef __cplusplus
@@ -123,9 +123,6 @@ void Components_Init(void)
   /*! SchedulerTask Auto initialization start */ 
   (void)SchedulerTask_Init();
   /*! SchedulerTask Auto initialization end */                       
-  /*! PeriodicTaskGen Auto initialization start */ 
-  (void)PeriodicTaskGen_Init();
-  /*! PeriodicTaskGen Auto initialization end */                       
   /*! MonitorTask Auto initialization start */ 
   (void)MonitorTask_Init();
   /*! MonitorTask Auto initialization end */                       
@@ -143,6 +140,9 @@ void Components_Init(void)
   /*! AperiodicTaskGen Auto initialization start */ 
   (void)AperiodicTaskGen_Init();
   /*! AperiodicTaskGen Auto initialization end */                       
+  /*! PeriodicTaskGen Auto initialization start */ 
+  (void)PeriodicTaskGen_Init();
+  /*! PeriodicTaskGen Auto initialization end */                       
 }
 #endif /* CPU_COMPONENTS_INIT */
 

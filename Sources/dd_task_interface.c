@@ -644,77 +644,6 @@ uint32_t dd_return_overhead(time_t * ovrhd){
 	_time_get_elapsed_ticks(&ticks);
 	start = ticks.HW_TICKS;
 
-	/*msg_req_ptr = (SCHEDULER_REQUEST_MSG_PTR)_msg_alloc(req_msg_pool);
-	if(msg_req_ptr == NULL){
-		printf("Could not allocate a message from the Scheduler\n");
-		_task_set_error(MQX_OK);
-		return FALSE;
-	}
-
-
-	// Setup the message
-	msg_req_ptr->HEADER.TARGET_QID = _msgq_get_id(0, SCHEDULER_QUEUE);
-	msg_req_ptr->CMD_ID = OVERHEAD;
-
-	// LOCK MUTEX
-	_mqx_uint error = _mutex_lock(&scheduler_mutex);
-	if (error != MQX_OK) {
-		printf("Mutex lock failed.\n");
-		printf("Error: %x\n", error);
-		_task_set_error(MQX_OK);
-		return FALSE;
-	}
-
-	// Message queue initialization code
-	msg_qid = _msgq_open(DD_INTERFACE_QUEUE, 0);
-	if(_task_get_error() != MQX_OK){
-		printf("Failed to open Schedule message queue.\n");
-		printf("Error code: %x\n", _task_get_error());
-		_task_set_error(MQX_OK);
-		_mutex_unlock(&scheduler_mutex);
-		return FALSE;
-	}
-
-	// Send message
-	msg_req_ptr->HEADER.SOURCE_QID = msg_qid;
-	_msgq_send(msg_req_ptr);
-	if(_task_get_error() != MQX_OK){
-		printf("Failed to send message from ______ \n");
-		printf("Error code: %x\n", _task_get_error());
-		_task_set_error(MQX_OK);
-		_mutex_unlock(&scheduler_mutex);
-		return FALSE;
-	}
-
-	 // Wait for the return message:
-	msg_res_ptr = _msgq_receive(msg_qid, 0);
-
-	// Grab info and free message
-	status = msg_res_ptr->STATUS;
-	time = msg_res_ptr->TIMER;
-	_msg_free(msg_res_ptr);
-
-	_msgq_close(msg_qid);
-	if(_task_get_error() != MQX_OK){
-		printf("Failed to close queue.\n");
-		printf("Error code: %x\n", _task_get_error());
-		_task_set_error(MQX_OK);
-		_mutex_unlock(&scheduler_mutex);
-		return FALSE;
-	}
-
-	// UNLOCK MUTEX
-	_mutex_unlock(&scheduler_mutex);
-
-	*overhead = time;
-
-	if(status != SUCCESSFUL){
-		printf("Failure to get Overhead! \n");
-		return FALSE;
-	} */
-
-
-
 	// LOCK MUTEX
 	_mqx_uint error = _mutex_lock(&overhead_mutex);
 	if (error != MQX_OK) {
@@ -724,7 +653,7 @@ uint32_t dd_return_overhead(time_t * ovrhd){
 		return FALSE;
 	}
 
-	*ovrhd = overhead / _time_get_hwticks_per_tick();
+	*ovrhd = overhead;
 
 	_time_get_elapsed_ticks(&ticks);
 	end = ticks.HW_TICKS;

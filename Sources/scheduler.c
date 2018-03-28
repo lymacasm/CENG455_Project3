@@ -52,7 +52,7 @@ extern "C" {
 #define RSP_POOL_SIZE REQ_POOL_SIZE
 
 /* Defines the highest possible task priority */
-#define HIGHEST_PRIORITY 15
+#define HIGHEST_PRIORITY 12
 
 /* Partition definitions */
 #define TASK_LIST_INITIAL_SIZE (8)
@@ -341,7 +341,7 @@ void scheduler_task(os_task_param_t task_init_data)
 		//printf("SCH: Sleeping for %x ticks\n", (unsigned int)timeout);
 
 		/* Block until the next deadline or until a message is received */
-		request_msg = (SCHEDULER_REQUEST_MSG_PTR)_msgq_receive(msg_qid, timeout);
+		request_msg = (SCHEDULER_REQUEST_MSG_PTR)_msgq_receive_ticks(msg_qid, timeout);
 
 		/* Start time for scheduler in ticks */
 		_time_get_elapsed_ticks(&current_t);
@@ -482,7 +482,7 @@ void scheduler_task(os_task_param_t task_init_data)
 				queue_print(&overdue_list);
 
 				/* Remove all elements from active queue, and terminate all associated tasks */
-				queue_remove_all(&active_list, TRUE);
+				//queue_remove_all(&active_list, TRUE);
 
 				/* Remove all elements from overdue queue, don't try and terminate tasks */
 				queue_remove_all(&overdue_list, FALSE);
@@ -514,7 +514,7 @@ void scheduler_task(os_task_param_t task_init_data)
 			printf("Task %x did not meet its deadline\n", (unsigned int)overdue_task->TID);
 
 			/* Terminate task */
-			//_task_destroy(overdue_task->TID);
+			_task_destroy(overdue_task->TID);
 		}
 #ifdef PEX_USE_RTOS   
 	}
